@@ -11,11 +11,12 @@ import Profile from "@/components/Profile";
 
 export default function Dashboard() {
   const [activeTab, setActiveTab] = useState("news");
-  const { theme, setTheme, resolvedTheme } = useTheme();
+  const { setTheme, resolvedTheme } = useTheme();
   const [mounted, setMounted] = useState(false);
 
-  // Fix hydration mismatch
+  // Fix hydration mismatch: track client-side mount to avoid next-themes SSR mismatch
   useEffect(() => {
+    // eslint-disable-next-line react-hooks/set-state-in-effect
     setMounted(true);
   }, []);
 

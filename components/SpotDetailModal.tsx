@@ -25,6 +25,7 @@ export default function SpotDetailModal({ spot, isOpen, onClose }: Props) {
 
   useEffect(() => {
     if (!spot) return;
+    // eslint-disable-next-line react-hooks/set-state-in-effect
     setPhotos([]);
     getSpotComments(spot.id).then((dbComments) => {
       // Show seed comments as a placeholder only when the DB has none yet

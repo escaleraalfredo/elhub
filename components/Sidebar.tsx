@@ -10,7 +10,12 @@ const tabs = [
   { id: "profile", label: "Mi Perfil", icon: User },
 ];
 
-export default function Sidebar({ activeTab, setActiveTab }: any) {
+interface SidebarProps {
+  activeTab: string;
+  setActiveTab: (tab: string) => void;
+}
+
+export default function Sidebar({ activeTab, setActiveTab }: SidebarProps) {
   return (
     <div className="w-72 border-r border-zinc-800 bg-zinc-900 h-screen p-6 flex flex-col">
       <div className="flex items-center gap-3 mb-10">
