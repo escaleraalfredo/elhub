@@ -12,7 +12,7 @@ export async function getNewsReactions(
     .select("emoji, count")
     .eq("news_id", newsId);
   if (error || !data) return {};
-  return Object.fromEntries(data.map((r: Pick<NewsReaction, "emoji" | "count">) => [r.emoji, r.count]));
+  return Object.fromEntries(data.map((r) => [r.emoji, r.count]));
 }
 
 export async function incrementNewsReaction(

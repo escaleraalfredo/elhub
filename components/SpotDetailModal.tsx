@@ -27,7 +27,12 @@ export default function SpotDetailModal({ spot, isOpen, onClose }: Props) {
     if (!spot) return;
     setPhotos([]);
     getSpotComments(spot.id).then((dbComments) => {
-      setComments(dbComments.length > 0 ? dbComments : SEED_COMMENTS.map((c) => ({ ...c, spot_id: spot.id })));
+      // Show seed comments as a placeholder only when the DB has none yet
+      setComments(
+        dbComments.length > 0
+          ? dbComments
+          : SEED_COMMENTS.map((c) => ({ ...c, spot_id: spot.id }))
+      );
     });
   }, [spot]);
 
@@ -80,6 +85,7 @@ export default function SpotDetailModal({ spot, isOpen, onClose }: Props) {
             className="h-40 w-40 flex-shrink-0 bg-zinc-100 dark:bg-zinc-700 rounded-2xl flex flex-col items-center justify-center text-emerald-500"
           >
             <Camera className="w-8 h-8" />
+            {/* Placeholder — real upload to Supabase Storage comes in a future step */}
             <span className="text-xs mt-2">Subir foto</span>
           </button>
         </div>

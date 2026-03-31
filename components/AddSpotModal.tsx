@@ -66,7 +66,7 @@ export default function AddSpotModal({ isOpen, onClose, onSpotAdded, existingNam
     } else {
       // Offline fallback — add to local list with a temporary id
       toast("Spot añadido localmente (sin conexión a BD)", { icon: "💾" });
-      onSpotAdded?.({ ...newSpotData, id: Date.now() });
+      onSpotAdded?.({ ...newSpotData, id: Date.now() + Math.random() });
     }
 
     reset();
