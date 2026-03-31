@@ -1,5 +1,5 @@
 import { supabase } from "./supabase";
-import type { NewsComment, NewsReaction, Spot, SpotComment } from "./types";
+import type { CommunityTopic, NewsComment, NewsReaction, Spot, SpotComment } from "./types";
 
 // ─── News Reactions ───────────────────────────────────────────────────────────
 
@@ -126,4 +126,29 @@ export async function addSpotComment(
     .single();
   if (error || !data) return null;
   return data as SpotComment;
+}
+
+// ─── Community Topics ─────────────────────────────────────────────────────────
+
+export async function getCommunityTopics(): Promise<CommunityTopic[]> {
+  if (!supabase) return [];
+  const { data, error } = await supabase
+    .from("community_topics")
+    .select("*")
+    .order("created_at", { ascending: true });
+  if (error || !data) return [];
+  return data as CommunityTopic[];
+}
+
+export async function addCommunityTopic(
+  text: string
+): Promise<CommunityTopic | null> {
+  if (!supabase) return null;
+  const { data, error } = await supabase
+    .from("community_topics")
+    .insert({ text })
+    .select()
+    .single();
+  if (error || !data) return null;
+  return data as CommunityTopic;
 }

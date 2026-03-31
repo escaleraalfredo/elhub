@@ -34,3 +34,9 @@ export interface SpotComment {
   emoji: string;
   created_at?: string;
 }
+
+export interface CommunityTopic {
+  id?: number;
+  text: string;
+  created_at?: string;
+}
