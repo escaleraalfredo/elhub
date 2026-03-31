@@ -40,3 +40,21 @@ export interface CommunityTopic {
   text: string;
   created_at?: string;
 }
+
+export interface TopicComment {
+  id?: string;
+  topic_id: number;
+  user_name: string;
+  text: string;
+  emoji: string;
+  created_at?: string;
+}
+
+export interface NewsArticle {
+  id: string;
+  title: string;
+  source: string;
+  image: string;
+  views: number;
+  created_at?: string;
+}

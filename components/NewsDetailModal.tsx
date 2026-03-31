@@ -9,18 +9,10 @@ import {
   getNewsComments,
   addNewsComment,
 } from "@/lib/db";
-import type { NewsComment } from "@/lib/types";
-
-interface Article {
-  id: string;
-  title: string;
-  source: string;
-  time: string;
-  image: string;
-}
+import type { NewsArticle, NewsComment } from "@/lib/types";
 
 interface Props {
-  article: Article | null;
+  article: NewsArticle | null;
   isOpen: boolean;
   onClose: () => void;
 }
@@ -31,6 +23,15 @@ const DEFAULT_REACTIONS: Record<string, number> = {
   "🇵🇷": 31,
   "🌴": 12,
 };
+
+function relativeTime(iso: string): string {
+  const diffMs = Date.now() - new Date(iso).getTime();
+  const mins = Math.floor(diffMs / 60000);
+  if (mins < 60) return `hace ${mins} min`;
+  const hours = Math.floor(mins / 60);
+  if (hours < 24) return `hace ${hours}h`;
+  return `hace ${Math.floor(hours / 24)}d`;
+}
 
 export default function NewsDetailModal({ article, isOpen, onClose }: Props) {
   const [comments, setComments] = useState<NewsComment[]>([]);
@@ -101,7 +102,7 @@ export default function NewsDetailModal({ article, isOpen, onClose }: Props) {
       <div className="bg-white dark:bg-zinc-800 w-full max-w-2xl rounded-3xl max-h-[90vh] flex flex-col overflow-hidden">
         <div className="p-6 border-b flex justify-between items-start">
           <div>
-            <div className="text-emerald-500 text-sm">{article.source} • {article.time}</div>
+            <div className="text-emerald-500 text-sm">{article.source}{article.created_at ? ` • ${relativeTime(article.created_at)}` : ""}</div>
             <h2 className="text-3xl font-bold leading-tight mt-2">{article.title}</h2>
           </div>
           <button onClick={onClose} className="text-4xl leading-none">✕</button>

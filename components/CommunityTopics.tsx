@@ -4,6 +4,7 @@ import { Plus, X } from "lucide-react";
 import toast from "react-hot-toast";
 import { getCommunityTopics, addCommunityTopic } from "@/lib/db";
 import type { CommunityTopic } from "@/lib/types";
+import TopicDetailModal from "./TopicDetailModal";
 
 const SEED_TOPICS: CommunityTopic[] = [
   { id: -1, text: "¿Qué opinan del nuevo aumento de LUMA?" },
@@ -14,6 +15,7 @@ const SEED_TOPICS: CommunityTopic[] = [
 export default function CommunityTopics() {
   const [topics, setTopics] = useState<CommunityTopic[]>(SEED_TOPICS);
   const [modalOpen, setModalOpen] = useState(false);
+  const [selectedTopic, setSelectedTopic] = useState<CommunityTopic | null>(null);
   const [text, setText] = useState("");
   const [loading, setLoading] = useState(false);
 
@@ -63,6 +65,7 @@ export default function CommunityTopics() {
         {topics.map((topic) => (
           <div
             key={topic.id}
+            onClick={() => setSelectedTopic(topic)}
             className="bg-white dark:bg-zinc-800 rounded-3xl p-6 text-xl font-medium cursor-pointer hover:bg-emerald-50 dark:hover:bg-zinc-700"
           >
             {topic.text}
@@ -98,6 +101,12 @@ export default function CommunityTopics() {
           </div>
         </div>
       )}
+
+      <TopicDetailModal
+        topic={selectedTopic}
+        isOpen={!!selectedTopic}
+        onClose={() => setSelectedTopic(null)}
+      />
     </div>
   );
 }

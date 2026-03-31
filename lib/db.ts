@@ -1,5 +1,5 @@
 import { supabase } from "./supabase";
-import type { CommunityTopic, NewsComment, NewsReaction, Spot, SpotComment } from "./types";
+import type { CommunityTopic, NewsArticle, NewsComment, NewsReaction, Spot, SpotComment, TopicComment } from "./types";
 
 // ─── News Reactions ───────────────────────────────────────────────────────────
 
@@ -151,4 +151,58 @@ export async function addCommunityTopic(
     .single();
   if (error || !data) return null;
   return data as CommunityTopic;
+}
+
+// ─── Topic Comments ───────────────────────────────────────────────────────────
+
+export async function getTopicComments(
+  topicId: number
+): Promise<TopicComment[]> {
+  if (!supabase) return [];
+  const { data, error } = await supabase
+    .from("topic_comments")
+    .select("*")
+    .eq("topic_id", topicId)
+    .order("created_at", { ascending: true });
+  if (error || !data) return [];
+  return data as TopicComment[];
+}
+
+export async function addTopicComment(
+  topicId: number,
+  text: string,
+  userName = "Tú",
+  emoji = "💬"
+): Promise<TopicComment | null> {
+  if (!supabase) return null;
+  const { data, error } = await supabase
+    .from("topic_comments")
+    .insert({ topic_id: topicId, text, user_name: userName, emoji })
+    .select()
+    .single();
+  if (error || !data) return null;
+  return data as TopicComment;
+}
+
+// ─── News Articles ────────────────────────────────────────────────────────────
+
+export async function getNewsArticles(): Promise<NewsArticle[]> {
+  if (!supabase) return [];
+  const { data, error } = await supabase
+    .from("news_articles")
+    .select("*")
+    .order("created_at", { ascending: false });
+  if (error || !data) return [];
+  return data as NewsArticle[];
+}
+
+export async function getTrendingArticles(limit = 3): Promise<NewsArticle[]> {
+  if (!supabase) return [];
+  const { data, error } = await supabase
+    .from("news_articles")
+    .select("*")
+    .order("views", { ascending: false })
+    .limit(limit);
+  if (error || !data) return [];
+  return data as NewsArticle[];
 }
