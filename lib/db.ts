@@ -15,6 +15,25 @@ export async function getNewsReactions(
   return Object.fromEntries(data.map((r) => [r.emoji, r.count]));
 }
 
+export async function decrementNewsReaction(
+  newsId: string,
+  emoji: string
+): Promise<void> {
+  if (!supabase) return;
+  const { data } = await supabase
+    .from("news_reactions")
+    .select("id, count")
+    .eq("news_id", newsId)
+    .eq("emoji", emoji)
+    .maybeSingle();
+  if (data && data.count > 0) {
+    await supabase
+      .from("news_reactions")
+      .update({ count: data.count - 1 })
+      .eq("id", data.id);
+  }
+}
+
 export async function incrementNewsReaction(
   newsId: string,
   emoji: string

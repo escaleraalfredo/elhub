@@ -57,4 +57,5 @@ export interface NewsArticle {
   image: string;
   views: number;
   created_at?: string;
+  url?: string;
 }
