@@ -104,12 +104,12 @@ async function fetchFeed(url: string, sourceName: string): Promise<RssItem[]> {
 
 export async function GET() {
   const feeds = await Promise.allSettled([
-    fetchFeed(
-      "https://news.google.com/rss/search?q=puerto+rico&hl=es-419&gl=PR&ceid=PR:es-419",
-      "Google News PR"
-    ),
     fetchFeed("https://www.elnuevodia.com/rss/", "El Nuevo Día"),
     fetchFeed("https://www.primerahora.com/rss/", "Primera Hora"),
+    fetchFeed("https://www.elvocero.com/rss/", "El Vocero"),
+    fetchFeed("https://elcalce.com/feed/", "El Calce"),
+    fetchFeed("https://www.noticel.com/rss/", "Noticel"),
+    fetchFeed("https://metro.pr/feed/", "Metro PR"),
   ]);
 
   const allItems: RssItem[] = [];
