@@ -1,44 +1,98 @@
 "use client";
 import { useState, useEffect } from "react";
-import { X, Send } from "lucide-react";
+import { Send } from "lucide-react";
 import { motion } from "framer-motion";
-
-interface Article {
-  id: string;
-  title: string;
-  source: string;
-  time: string;
-  image: string;
-}
+import toast from "react-hot-toast";
+import {
+  getNewsReactions,
+  incrementNewsReaction,
+  getNewsComments,
+  addNewsComment,
+} from "@/lib/db";
+import type { NewsArticle, NewsComment } from "@/lib/types";
 
 interface Props {
-  article: Article | null;
+  article: NewsArticle | null;
   isOpen: boolean;
   onClose: () => void;
 }
 
+const DEFAULT_REACTIONS: Record<string, number> = {
+  "🔥": 42,
+  "😡": 18,
+  "🇵🇷": 31,
+  "🌴": 12,
+};
+
+function relativeTime(iso: string): string {
+  const diffMs = Date.now() - new Date(iso).getTime();
+  const mins = Math.floor(diffMs / 60000);
+  if (mins < 60) return `hace ${mins} min`;
+  const hours = Math.floor(mins / 60);
+  if (hours < 24) return `hace ${hours}h`;
+  return `hace ${Math.floor(hours / 24)}d`;
+}
+
 export default function NewsDetailModal({ article, isOpen, onClose }: Props) {
-  const [comments, setComments] = useState<any[]>([]);
+  const [comments, setComments] = useState<NewsComment[]>([]);
   const [newComment, setNewComment] = useState("");
-  const [reactions, setReactions] = useState<Record<string, number>>({ "🔥": 42, "😡": 18, "🇵🇷": 31, "🌴": 12 });
+  const [reactions, setReactions] =
+    useState<Record<string, number>>(DEFAULT_REACTIONS);
+  const [loading, setLoading] = useState(false);
 
   useEffect(() => {
-    if (article) {
-      const savedReactions = localStorage.getItem(`reactions-${article.id}`);
-      if (savedReactions) setReactions(JSON.parse(savedReactions));
-    }
+    if (!article) return;
+
+    // Load reactions
+    getNewsReactions(article.id).then((dbReactions) => {
+      if (Object.keys(dbReactions).length > 0) {
+        setReactions(dbReactions);
+      } else {
+        // Fall back to localStorage
+        const saved = localStorage.getItem(`reactions-${article.id}`);
+        if (saved) {
+          try {
+            setReactions(JSON.parse(saved));
+          } catch {
+            setReactions(DEFAULT_REACTIONS);
+          }
+        } else {
+          setReactions(DEFAULT_REACTIONS);
+        }
+      }
+    });
+
+    // Load comments
+    getNewsComments(article.id).then((dbComments) => {
+      setComments(dbComments);
+    });
   }, [article]);
 
-  const addReaction = (emoji: string) => {
-    const newReactions = { ...reactions, [emoji]: (reactions[emoji] || 0) + 1 };
-    setReactions(newReactions);
-    if (article) localStorage.setItem(`reactions-${article.id}`, JSON.stringify(newReactions));
+  const addReaction = async (emoji: string) => {
+    const updated = { ...reactions, [emoji]: (reactions[emoji] || 0) + 1 };
+    setReactions(updated);
+    if (!article) return;
+    // Persist to Supabase; also keep localStorage as fallback
+    await incrementNewsReaction(article.id, emoji);
+    localStorage.setItem(`reactions-${article.id}`, JSON.stringify(updated));
   };
 
-  const addComment = () => {
-    if (!newComment) return;
-    setComments([...comments, { user: "Tú", text: newComment, emoji: "👍" }]);
+  const handleAddComment = async () => {
+    if (!newComment.trim() || !article) return;
+    setLoading(true);
+    const saved = await addNewsComment(article.id, newComment.trim());
+    if (saved) {
+      setComments((prev) => [...prev, saved]);
+    } else {
+      // Offline fallback
+      setComments((prev) => [
+        ...prev,
+        { news_id: article.id, user_name: "Tú", text: newComment.trim(), emoji: "👍" },
+      ]);
+      toast("Comentario guardado localmente (sin conexión a BD)", { icon: "💾" });
+    }
     setNewComment("");
+    setLoading(false);
   };
 
   if (!isOpen || !article) return null;
@@ -48,13 +102,13 @@ export default function NewsDetailModal({ article, isOpen, onClose }: Props) {
       <div className="bg-white dark:bg-zinc-800 w-full max-w-2xl rounded-3xl max-h-[90vh] flex flex-col overflow-hidden">
         <div className="p-6 border-b flex justify-between items-start">
           <div>
-            <div className="text-emerald-500 text-sm">{article.source} • {article.time}</div>
+            <div className="text-emerald-500 text-sm">{article.source}{article.created_at ? ` • ${relativeTime(article.created_at)}` : ""}</div>
             <h2 className="text-3xl font-bold leading-tight mt-2">{article.title}</h2>
           </div>
           <button onClick={onClose} className="text-4xl leading-none">✕</button>
         </div>
 
-        <img src={article.image} className="w-full h-80 object-cover" />
+        <img src={article.image} className="w-full h-80 object-cover" alt={article.title} />
 
         <div className="flex-1 overflow-auto p-6 space-y-8">
           <div className="flex flex-wrap gap-4">
@@ -70,17 +124,17 @@ export default function NewsDetailModal({ article, isOpen, onClose }: Props) {
             ))}
           </div>
 
-          <a href="#" target="_blank" className="block w-full py-5 text-center bg-black text-white rounded-3xl font-semibold">
+          <a href="#" target="_blank" rel="noreferrer" className="block w-full py-5 text-center bg-black text-white rounded-3xl font-semibold">
             Leer artículo completo en {article.source} →
           </a>
 
-          <h3 className="font-semibold text-xl">Comentarios</h3>
+          <h3 className="font-semibold text-xl">Comentarios ({comments.length})</h3>
           <div className="space-y-6">
-            {comments.map((c: any, i: number) => (
-              <div key={i} className="flex gap-4">
+            {comments.map((c, i) => (
+              <div key={c.id ?? i} className="flex gap-4">
                 <div className="text-4xl">{c.emoji}</div>
                 <div>
-                  <span className="font-semibold">{c.user}</span>
+                  <span className="font-semibold">{c.user_name}</span>
                   <p className="mt-1">{c.text}</p>
                 </div>
               </div>
@@ -93,12 +147,17 @@ export default function NewsDetailModal({ article, isOpen, onClose }: Props) {
             type="text"
             value={newComment}
             onChange={(e) => setNewComment(e.target.value)}
+            onKeyDown={(e) => e.key === "Enter" && handleAddComment()}
             placeholder="Comenta o usa emojis..."
             className="flex-1 bg-zinc-100 dark:bg-zinc-700 rounded-3xl px-6 py-5 outline-none"
           />
-          <button onClick={addComment} className="bg-emerald-400 text-black px-8 rounded-3xl">Enviar</button>
-          <button className="text-4xl">🎁</button>
-          <button className="text-4xl">😀</button>
+          <button
+            onClick={handleAddComment}
+            disabled={loading || !newComment.trim()}
+            className="bg-emerald-400 text-black px-8 rounded-3xl disabled:opacity-50"
+          >
+            <Send className="w-5 h-5" />
+          </button>
         </div>
       </div>
     </div>
