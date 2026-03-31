@@ -50,7 +50,7 @@ function FeaturedCard({ article, onClick }: { article: NewsArticle; onClick: () 
       className="cursor-pointer group border-b border-zinc-200 dark:border-zinc-700 pb-6 mb-2"
       onClick={onClick}
     >
-      <div className="relative overflow-hidden rounded-xl mb-3 aspect-video">
+      <div className="relative overflow-hidden rounded-lg mb-3 h-36">
         <img
           src={article.image}
           alt=""
@@ -101,7 +101,7 @@ function CompactCard({ article, index, onClick }: { article: NewsArticle; index:
           </h3>
         </div>
         {/* Thumbnail */}
-        <div className="flex-shrink-0 w-20 h-16 rounded-lg overflow-hidden">
+        <div className="flex-shrink-0 w-14 h-12 rounded-md overflow-hidden">
           <img
             src={article.image}
             alt=""
