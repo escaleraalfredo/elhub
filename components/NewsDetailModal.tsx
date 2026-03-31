@@ -1,6 +1,7 @@
 "use client";
 import { useState, useEffect } from "react";
 import { Send } from "lucide-react";
+import Image from "next/image";
 import { motion } from "framer-motion";
 import toast from "react-hot-toast";
 import {
@@ -108,7 +109,7 @@ export default function NewsDetailModal({ article, isOpen, onClose }: Props) {
           <button onClick={onClose} className="text-4xl leading-none">✕</button>
         </div>
 
-        <img src={article.image} className="w-full h-80 object-cover" alt={article.title} />
+        <Image src={article.image} className="w-full h-80 object-cover" alt={article.title} width={1200} height={320} style={{ width: "100%", height: "20rem" }} />
 
         <div className="flex-1 overflow-auto p-6 space-y-8">
           <div className="flex flex-wrap gap-4">

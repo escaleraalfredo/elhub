@@ -1,6 +1,7 @@
 "use client";
 import { useState, useEffect } from "react";
 import { Heart, Camera, Send } from "lucide-react";
+import Image from "next/image";
 import { motion } from "framer-motion";
 import toast from "react-hot-toast";
 import { getSpotComments, addSpotComment } from "@/lib/db";
@@ -79,7 +80,7 @@ export default function SpotDetailModal({ spot, isOpen, onClose }: Props) {
         {/* Photos */}
         <div className="p-6 flex gap-3 overflow-x-auto">
           {photos.map((photo, i) => (
-            <img key={i} src={photo} className="h-40 rounded-2xl object-cover" alt="" />
+            <Image key={i} src={photo} className="h-40 rounded-2xl object-cover" alt={`Spot photo ${i + 1}`} width={600} height={160} style={{ height: "10rem" }} />
           ))}
           <button
             onClick={addPhoto}

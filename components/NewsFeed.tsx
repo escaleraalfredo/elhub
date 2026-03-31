@@ -1,6 +1,7 @@
 "use client";
 import { useEffect, useState } from "react";
 import { motion } from "framer-motion";
+import Image from "next/image";
 import NewsDetailModal from "./NewsDetailModal";
 import { getNewsArticles } from "@/lib/db";
 import type { NewsArticle } from "@/lib/types";
@@ -47,7 +48,7 @@ export default function NewsFeed() {
             onClick={() => setSelectedArticle(article)}
             className="bg-white dark:bg-zinc-800 rounded-3xl overflow-hidden shadow-xl cursor-pointer"
           >
-            <img src={article.image} className="w-full h-56 object-cover" alt="" />
+            <Image src={article.image} className="w-full h-56 object-cover" alt={article.title} width={1200} height={224} style={{ width: "100%", height: "14rem" }} />
             <div className="p-6">
               <div className="flex justify-between text-xs text-emerald-500 mb-3">
                 <span>{article.source}</span>

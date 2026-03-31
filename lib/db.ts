@@ -1,5 +1,5 @@
 import { supabase } from "./supabase";
-import type { CommunityTopic, NewsArticle, NewsComment, NewsReaction, Spot, SpotComment, TopicComment } from "./types";
+import type { CommunityTopic, NewsArticle, NewsComment, Spot, SpotComment, TopicComment } from "./types";
 
 // ─── News Reactions ───────────────────────────────────────────────────────────
 
