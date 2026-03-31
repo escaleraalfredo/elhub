@@ -1,9 +1,8 @@
 "use client";
 import { useEffect, useState, useCallback } from "react";
-import { ThumbsUp, ThumbsDown, ExternalLink, RefreshCw } from "lucide-react";
+import { ExternalLink, RefreshCw } from "lucide-react";
 import { motion } from "framer-motion";
 import NewsDetailModal from "./NewsDetailModal";
-import { getNewsReactions, incrementNewsReaction } from "@/lib/db";
 import type { NewsArticle } from "@/lib/types";
 
 // ─── Seed fallback ─────────────────────────────────────────────────────────────
@@ -14,8 +13,6 @@ const SEED_ARTICLES: NewsArticle[] = [
   { id: "4", title: "Gobernador firma proyecto de ley para reducir el costo de la energía", source: "Noticel", image: "https://picsum.photos/id/1039/800/450", views: 9800, created_at: new Date(Date.now() - 3 * 60 * 60 * 1000).toISOString() },
   { id: "5", title: "Lluvia de oportunidades de empleo llega a San Juan esta semana", source: "El Vocero", image: "https://picsum.photos/id/180/800/450", views: 7200, created_at: new Date(Date.now() - 4 * 60 * 60 * 1000).toISOString() },
 ];
-
-const REACTION_EMOJIS = ["🔥", "❤️", "😮", "😡", "🇵🇷", "😂", "👏", "🤔"];
 
 function relativeTime(iso: string | undefined): string {
   if (!iso) return "";
@@ -46,73 +43,14 @@ function sourceBadge(source: string) {
   );
 }
 
-// ─── Per-article reaction + vote row ──────────────────────────────────────────
-function ArticleActions({ article }: { article: NewsArticle }) {
-  const [reactions, setReactions] = useState<Record<string, number>>({});
-  const [votes, setVotes] = useState<{ up: number; down: number; voted?: "up" | "down" }>({ up: 0, down: 0 });
-
-  useEffect(() => {
-    getNewsReactions(article.id).then((r) => {
-      if (Object.keys(r).length > 0) setReactions(r);
-    });
-    // Load votes from localStorage (no extra DB table needed)
-    try {
-      const saved = localStorage.getItem(`votes-${article.id}`);
-      if (saved) setVotes(JSON.parse(saved));
-    } catch { /* ignore */ }
-  }, [article.id]);
-
-  const handleVote = (dir: "up" | "down") => {
-    if (votes.voted) return;
-    const next = { ...votes, [dir === "up" ? "up" : "down"]: votes[dir === "up" ? "up" : "down"] + 1, voted: dir };
-    setVotes(next);
-    try { localStorage.setItem(`votes-${article.id}`, JSON.stringify(next)); } catch { /* ignore */ }
-  };
-
-  const handleReaction = async (emoji: string) => {
-    setReactions((prev) => ({ ...prev, [emoji]: (prev[emoji] ?? 0) + 1 }));
-    await incrementNewsReaction(article.id, emoji);
-  };
-
-  return (
-    <div className="flex flex-wrap items-center gap-1.5 mt-2" onClick={(e) => e.stopPropagation()}>
-      {/* Vote buttons */}
-      <button
-        onClick={() => handleVote("up")}
-        className={`flex items-center gap-1 text-xs font-semibold px-2.5 py-1 rounded-full border transition-colors ${votes.voted === "up" ? "bg-emerald-500 text-white border-emerald-500" : "border-zinc-300 dark:border-zinc-600 hover:border-emerald-400 hover:text-emerald-600"}`}
-      >
-        <ThumbsUp className="w-3 h-3" /> {votes.up || ""}
-      </button>
-      <button
-        onClick={() => handleVote("down")}
-        className={`flex items-center gap-1 text-xs font-semibold px-2.5 py-1 rounded-full border transition-colors ${votes.voted === "down" ? "bg-red-500 text-white border-red-500" : "border-zinc-300 dark:border-zinc-600 hover:border-red-400 hover:text-red-600"}`}
-      >
-        <ThumbsDown className="w-3 h-3" /> {votes.down || ""}
-      </button>
-      {/* Emoji reactions */}
-      {REACTION_EMOJIS.map((emoji) => (
-        <motion.button
-          key={emoji}
-          whileTap={{ scale: 1.35 }}
-          onClick={() => handleReaction(emoji)}
-          className="flex items-center gap-0.5 text-xs bg-zinc-100 dark:bg-zinc-700 hover:bg-zinc-200 dark:hover:bg-zinc-600 px-2 py-1 rounded-full transition-colors"
-        >
-          <span>{emoji}</span>
-          {reactions[emoji] ? <span className="font-semibold text-zinc-600 dark:text-zinc-300">{reactions[emoji]}</span> : null}
-        </motion.button>
-      ))}
-    </div>
-  );
-}
-
 // ─── Featured (first) card ────────────────────────────────────────────────────
 function FeaturedCard({ article, onClick }: { article: NewsArticle; onClick: () => void }) {
   return (
     <div
-      className="cursor-pointer group border-b border-zinc-200 dark:border-zinc-700 pb-6 mb-6"
+      className="cursor-pointer group border-b border-zinc-200 dark:border-zinc-700 pb-6 mb-2"
       onClick={onClick}
     >
-      <div className="relative overflow-hidden rounded-lg mb-3 aspect-[16/9] max-h-48">
+      <div className="relative overflow-hidden rounded-xl mb-3 aspect-video">
         <img
           src={article.image}
           alt=""
@@ -124,20 +62,19 @@ function FeaturedCard({ article, onClick }: { article: NewsArticle; onClick: () 
             target="_blank"
             rel="noreferrer"
             onClick={(e) => e.stopPropagation()}
-            className="absolute top-2 right-2 bg-black/60 text-white p-1 rounded-md opacity-0 group-hover:opacity-100 transition-opacity"
+            className="absolute top-2 right-2 bg-black/60 text-white p-1.5 rounded-lg opacity-0 group-hover:opacity-100 transition-opacity"
           >
             <ExternalLink className="w-3.5 h-3.5" />
           </a>
         )}
       </div>
-      <div className="flex items-center gap-2 mb-1.5">
+      <div className="flex items-center gap-2 mb-2">
         {sourceBadge(article.source)}
         <span className="text-zinc-400 text-xs">{relativeTime(article.created_at)}</span>
       </div>
       <h2 className="text-xl font-bold leading-snug text-zinc-900 dark:text-zinc-50 group-hover:text-emerald-600 dark:group-hover:text-emerald-400 transition-colors">
         {article.title}
       </h2>
-      <ArticleActions article={article} />
     </div>
   );
 }
@@ -146,7 +83,7 @@ function FeaturedCard({ article, onClick }: { article: NewsArticle; onClick: () 
 function CompactCard({ article, index, onClick }: { article: NewsArticle; index: number; onClick: () => void }) {
   return (
     <motion.div
-      initial={{ opacity: 0, y: 8 }}
+      initial={{ opacity: 0, y: 6 }}
       animate={{ opacity: 1, y: 0 }}
       transition={{ delay: index * 0.04 }}
       className="cursor-pointer group border-b border-zinc-100 dark:border-zinc-800 py-4 last:border-0"
@@ -155,20 +92,23 @@ function CompactCard({ article, index, onClick }: { article: NewsArticle; index:
       <div className="flex gap-3 items-start">
         {/* Text */}
         <div className="flex-1 min-w-0">
-          <div className="flex items-center gap-2 mb-1">
+          <div className="flex items-center gap-2 mb-1.5">
             {sourceBadge(article.source)}
             <span className="text-zinc-400 text-xs">{relativeTime(article.created_at)}</span>
           </div>
-          <h3 className="text-sm font-bold leading-snug text-zinc-900 dark:text-zinc-100 group-hover:text-emerald-600 dark:group-hover:text-emerald-400 transition-colors line-clamp-3">
+          <h3 className="text-sm font-semibold leading-snug text-zinc-900 dark:text-zinc-100 group-hover:text-emerald-600 dark:group-hover:text-emerald-400 transition-colors line-clamp-3">
             {article.title}
           </h3>
         </div>
         {/* Thumbnail */}
-        <div className="flex-shrink-0 w-20 h-16 rounded-md overflow-hidden ml-2">
-          <img src={article.image} alt="" className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300" />
+        <div className="flex-shrink-0 w-20 h-16 rounded-lg overflow-hidden">
+          <img
+            src={article.image}
+            alt=""
+            className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
+          />
         </div>
       </div>
-      <ArticleActions article={article} />
     </motion.div>
   );
 }
