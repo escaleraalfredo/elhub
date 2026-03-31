@@ -124,7 +124,7 @@ export default function NewsDetailModal({ article, isOpen, onClose }: Props) {
             ))}
           </div>
 
-          <a href="#" target="_blank" rel="noreferrer" className="block w-full py-5 text-center bg-black text-white rounded-3xl font-semibold">
+          <a href={article.url ?? "#"} target="_blank" rel="noreferrer" className="block w-full py-5 text-center bg-black text-white rounded-3xl font-semibold">
             Leer artículo completo en {article.source} →
           </a>
 

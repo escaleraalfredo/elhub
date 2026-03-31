@@ -2,7 +2,6 @@
 import { useEffect, useState } from "react";
 import { motion } from "framer-motion";
 import NewsDetailModal from "./NewsDetailModal";
-import { getNewsArticles } from "@/lib/db";
 import type { NewsArticle } from "@/lib/types";
 
 const SEED_ARTICLES: NewsArticle[] = [
@@ -24,11 +23,16 @@ function relativeTime(iso: string | undefined): string {
 export default function NewsFeed() {
   const [articles, setArticles] = useState<NewsArticle[]>(SEED_ARTICLES);
   const [selectedArticle, setSelectedArticle] = useState<NewsArticle | null>(null);
+  const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    getNewsArticles().then((data) => {
-      if (data.length > 0) setArticles(data);
-    });
+    fetch("/api/news")
+      .then((r) => r.json())
+      .then((data: NewsArticle[]) => {
+        if (Array.isArray(data) && data.length > 0) setArticles(data);
+      })
+      .catch(() => {/* keep seeds */})
+      .finally(() => setLoading(false));
   }, []);
 
   const sorted = [...articles].sort((a, b) => b.views - a.views);
@@ -38,6 +42,10 @@ export default function NewsFeed() {
       <h1 className="text-4xl font-bold mb-8 flex items-center gap-3">
         Noticias de Puerto Rico <span className="text-emerald-400 text-xl">🔥 Trending PR</span>
       </h1>
+
+      {loading && (
+        <p className="text-zinc-400 mb-6 animate-pulse">Cargando noticias en vivo…</p>
+      )}
 
       <div className="space-y-8">
         {sorted.map((article) => (

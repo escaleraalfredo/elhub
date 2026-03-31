@@ -1,5 +1,5 @@
 import { supabase } from "./supabase";
-import type { CommunityTopic, NewsArticle, NewsComment, NewsReaction, Spot, SpotComment, TopicComment } from "./types";
+import type { CommunityTopic, LeaderboardEntry, NewsArticle, NewsComment, NewsReaction, Spot, SpotComment, TopicComment, TrendingReaction, UserProfile } from "./types";
 
 // ─── News Reactions ───────────────────────────────────────────────────────────
 
@@ -205,4 +205,108 @@ export async function getTrendingArticles(limit = 3): Promise<NewsArticle[]> {
     .limit(limit);
   if (error || !data) return [];
   return data as NewsArticle[];
+}
+
+// ─── Trending Votes (upvote / downvote) ───────────────────────────────────────
+
+export async function getTrendingVotes(
+  articleId: string
+): Promise<{ upvotes: number; downvotes: number }> {
+  if (!supabase) return { upvotes: 0, downvotes: 0 };
+  const { data, error } = await supabase
+    .from("trending_votes")
+    .select("direction")
+    .eq("article_id", articleId);
+  if (error || !data) return { upvotes: 0, downvotes: 0 };
+  const upvotes = data.filter((r) => r.direction === "up").length;
+  const downvotes = data.filter((r) => r.direction === "down").length;
+  return { upvotes, downvotes };
+}
+
+export async function castTrendingVote(
+  articleId: string,
+  direction: "up" | "down"
+): Promise<void> {
+  if (!supabase) return;
+  await supabase
+    .from("trending_votes")
+    .insert({ article_id: articleId, direction });
+}
+
+// ─── Trending Reactions ───────────────────────────────────────────────────────
+
+export async function getTrendingReactions(
+  articleId: string
+): Promise<Record<string, number>> {
+  if (!supabase) return {};
+  const { data, error } = await supabase
+    .from("trending_reactions")
+    .select("emoji, count")
+    .eq("article_id", articleId);
+  if (error || !data) return {};
+  return Object.fromEntries(data.map((r) => [r.emoji, r.count]));
+}
+
+export async function incrementTrendingReaction(
+  articleId: string,
+  emoji: string
+): Promise<void> {
+  if (!supabase) return;
+  const { data } = await supabase
+    .from("trending_reactions")
+    .select("id, count")
+    .eq("article_id", articleId)
+    .eq("emoji", emoji)
+    .maybeSingle();
+
+  if (data) {
+    const row = data as TrendingReaction & { id: string };
+    await supabase
+      .from("trending_reactions")
+      .update({ count: row.count + 1 })
+      .eq("id", row.id);
+  } else {
+    await supabase
+      .from("trending_reactions")
+      .insert({ article_id: articleId, emoji, count: 1 });
+  }
+}
+
+// ─── User Profiles ────────────────────────────────────────────────────────────
+
+export async function getUserProfile(
+  userId: string
+): Promise<UserProfile | null> {
+  if (!supabase) return null;
+  const { data, error } = await supabase
+    .from("user_profiles")
+    .select("*")
+    .eq("id", userId)
+    .maybeSingle();
+  if (error || !data) return null;
+  return data as UserProfile;
+}
+
+export async function upsertUserProfile(
+  profile: Partial<UserProfile> & { id: string }
+): Promise<UserProfile | null> {
+  if (!supabase) return null;
+  const { data, error } = await supabase
+    .from("user_profiles")
+    .upsert(profile, { onConflict: "id" })
+    .select()
+    .single();
+  if (error || !data) return null;
+  return data as UserProfile;
+}
+
+export async function getLeaderboard(limit = 10): Promise<LeaderboardEntry[]> {
+  if (!supabase) return [];
+  const { data, error } = await supabase
+    .from("user_profiles")
+    .select("user_name, avatar_emoji, points, badges")
+    .order("points", { ascending: false })
+    .limit(limit);
+  if (error || !data) return [];
+  return data as LeaderboardEntry[];
 }

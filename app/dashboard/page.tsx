@@ -1,23 +1,43 @@
 "use client";
 import { useState, useEffect } from "react";
 import { useTheme } from "next-themes";
-import { Sun, Moon } from "lucide-react";
+import { Sun, Moon, LogIn, LogOut } from "lucide-react";
 import Sidebar from "@/components/Sidebar";
 import NewsFeed from "@/components/NewsFeed";
 import Descubre from "@/components/Descubre";
 import TrendingTopics from "@/components/TrendingTopics";
 import CommunityTopics from "@/components/CommunityTopics";
 import Profile from "@/components/Profile";
+import AuthModal from "@/components/AuthModal";
+import { supabase } from "@/lib/supabase";
+import type { User } from "@supabase/supabase-js";
 
 export default function Dashboard() {
   const [activeTab, setActiveTab] = useState("news");
   const { theme, setTheme, resolvedTheme } = useTheme();
   const [mounted, setMounted] = useState(false);
+  const [authOpen, setAuthOpen] = useState(false);
+  const [user, setUser] = useState<User | null>(null);
 
-  // Fix hydration mismatch
   useEffect(() => {
     setMounted(true);
+
+    if (!supabase) return;
+
+    supabase.auth.getUser().then(({ data }) => setUser(data.user ?? null));
+
+    const { data: { subscription } } = supabase.auth.onAuthStateChange((_e, session) => {
+      setUser(session?.user ?? null);
+    });
+
+    return () => subscription.unsubscribe();
   }, []);
+
+  const handleSignOut = async () => {
+    if (!supabase) return;
+    await supabase.auth.signOut();
+    setUser(null);
+  };
 
   const renderContent = () => {
     if (activeTab === "news") return <NewsFeed />;
@@ -46,6 +66,24 @@ export default function Dashboard() {
 
       <div className="flex-1 flex flex-col">
         <header className="h-16 border-b border-zinc-800 px-8 flex items-center justify-end gap-4">
+          {user ? (
+            <button
+              onClick={handleSignOut}
+              title="Cerrar sesión"
+              className="flex items-center gap-2 px-4 py-2 hover:bg-zinc-800 rounded-3xl text-sm"
+            >
+              <LogOut className="w-5 h-5" />
+              <span className="hidden sm:inline">{user.email}</span>
+            </button>
+          ) : (
+            <button
+              onClick={() => setAuthOpen(true)}
+              className="flex items-center gap-2 px-4 py-2 bg-emerald-400 text-black rounded-3xl text-sm font-semibold hover:bg-emerald-300 transition"
+            >
+              <LogIn className="w-5 h-5" /> Entrar
+            </button>
+          )}
+
           <button
             onClick={() => setTheme(resolvedTheme === "dark" ? "light" : "dark")}
             className="p-3 hover:bg-zinc-800 rounded-3xl"
@@ -58,6 +96,8 @@ export default function Dashboard() {
           {renderContent()}
         </main>
       </div>
+
+      <AuthModal isOpen={authOpen} onClose={() => setAuthOpen(false)} />
     </div>
   );
 }

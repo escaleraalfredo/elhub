@@ -54,7 +54,43 @@ export interface NewsArticle {
   id: string;
   title: string;
   source: string;
+  /** Canonical URL of the original article */
+  url?: string;
   image: string;
   views: number;
+  upvotes?: number;
+  downvotes?: number;
   created_at?: string;
+}
+
+export interface TrendingVote {
+  id?: string;
+  article_id: string;
+  direction: "up" | "down";
+  created_at?: string;
+}
+
+export interface TrendingReaction {
+  id?: string;
+  article_id: string;
+  emoji: string;
+  count: number;
+}
+
+export interface UserProfile {
+  id: string;
+  user_name: string;
+  avatar_emoji: string;
+  points: number;
+  streak: number;
+  badges: string[];
+  check_ins: number;
+  created_at?: string;
+}
+
+export interface LeaderboardEntry {
+  user_name: string;
+  avatar_emoji: string;
+  points: number;
+  badges: string[];
 }
