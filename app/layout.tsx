@@ -1,11 +1,26 @@
+// app/layout.tsx
 import type { Metadata } from "next";
+import { Geist, Geist_Mono } from "next/font/google";
 import "./globals.css";
-import { ThemeProvider } from "next-themes";
-import { Toaster } from "react-hot-toast";
+import { Toaster } from "sonner";
+import { GamificationProvider } from "@/lib/gamificationContext";
+import { NewsProvider } from "@/lib/newsContext";
+import GlobalHeader from "@/components/GlobalHeader";
+import BottomNav from "@/components/BottomNav";
+
+const geistSans = Geist({
+  variable: "--font-geist-sans",
+  subsets: ["latin"],
+});
+
+const geistMono = Geist_Mono({
+  variable: "--font-geist-mono",
+  subsets: ["latin"],
+});
 
 export const metadata: Metadata = {
-  title: "ElHub • Puerto Rico",
-  description: "Noticias + Vibes de la Isla",
+  title: "ElHub - Puerto Rico",
+  description: "Lo que pasa en Puerto Rico",
 };
 
 export default function RootLayout({
@@ -14,17 +29,16 @@ export default function RootLayout({
   children: React.ReactNode;
 }) {
   return (
-    <html lang="es" suppressHydrationWarning>
-      <body suppressHydrationWarning>
-        <ThemeProvider 
-          attribute="class" 
-          defaultTheme="dark" 
-          enableSystem 
-          disableTransitionOnChange
-        >
-          {children}
-          <Toaster position="top-right" />
-        </ThemeProvider>
+    <html lang="es" className="dark">
+      <body className={`${geistSans.variable} ${geistMono.variable} antialiased bg-[#09090b] text-white`}>
+        <GamificationProvider>
+          <NewsProvider>
+            <GlobalHeader />
+            {children}
+            <BottomNav />
+            <Toaster position="top-center" richColors closeButton />
+          </NewsProvider>
+        </GamificationProvider>
       </body>
     </html>
   );

@@ -1,18 +1,46 @@
-@tailwind base;
-@tailwind components;
-@tailwind utilities;
+@import "tailwindcss";
 
-body {
-  font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+:root {
+  --background: #09090b;
+  --foreground: #fafafa;
 }
 
-@layer base {
-  :root {
-    --background: 0 0% 100%;
-    --foreground: 240 10% 3.9%;
-  }
-  .dark {
-    --background: 240 10% 3.9%;
-    --foreground: 0 0% 98%;
-  }
+body {
+  font-family: var(--font-geist-sans);
+  background-color: #09090b;
+  color: #fafafa;
+}
+
+/* Hide scrollbars while keeping functionality */
+.scrollbar-hide::-webkit-scrollbar {
+  display: none;
+}
+
+.scrollbar-hide {
+  -ms-overflow-style: none;
+  scrollbar-width: none;
+}
+
+/* Smooth scrolling & mobile feel */
+html {
+  scroll-behavior: smooth;
+}
+
+/* Custom utility improvements */
+.card {
+  @apply bg-zinc-900 rounded-3xl border border-zinc-800;
+}
+
+.pr-red {
+  color: #e63939;
+}
+
+.dark-bg {
+  background-color: #09090b;
+}
+
+/* Focus styles for better UX */
+button:focus-visible {
+  outline: 2px solid #e63939;
+  outline-offset: 2px;
 }
