@@ -2,7 +2,7 @@
 "use client";
 
 import Link from "next/link";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { ThumbsUp, ThumbsDown, MessageCircle, Bookmark, Smile } from "lucide-react";
 import { useGamification } from "@/lib/gamificationContext";
 import { useNews } from "@/lib/newsContext";
@@ -11,6 +11,7 @@ export default function NoticiasPage() {
   const { addPoints } = useGamification();
   const { news, updateNews } = useNews();
 
+  const [activeTab, setActiveTab] = useState<"para-ti" | "noticias">("noticias");
   const [openEmojiPicker, setOpenEmojiPicker] = useState<string | null>(null);
 
   const emojis = [
@@ -19,6 +20,11 @@ export default function NoticiasPage() {
     "🖕", "👍", "👎", "🥳", "😱", "🤔", "🇵🇷", "🇺🇸", 
     "😍", "🤯", "🙄", "💯", "🚀", "🍆", "🥲", "👑"
   ];
+
+  // Sync activeTab when directly accessing /noticias
+  useEffect(() => {
+    setActiveTab("noticias");
+  }, []);
 
   const handleVote = (id: string, vote: "up" | "down") => {
     updateNews(id, (item) => {
@@ -56,6 +62,33 @@ export default function NoticiasPage() {
 
   return (
     <div className="min-h-screen bg-[#09090b] pb-20">
+      {/* Sub Tabs - Para Ti | Noticias (visible on /noticias too) */}
+      <div className="sticky top-[57px] bg-zinc-950 border-b border-zinc-800 z-40">
+        <div className="max-w-md mx-auto flex">
+          <Link
+            href="/"
+            className={`flex-1 py-4 text-sm font-medium transition-all text-center ${
+              activeTab === "para-ti" 
+                ? "text-pr-red border-b-2 border-pr-red" 
+                : "text-zinc-400"
+            }`}
+            onClick={() => setActiveTab("para-ti")}
+          >
+            Para Ti
+          </Link>
+          <button
+            onClick={() => setActiveTab("noticias")}
+            className={`flex-1 py-4 text-sm font-medium transition-all ${
+              activeTab === "noticias" 
+                ? "text-pr-red border-b-2 border-pr-red" 
+                : "text-zinc-400"
+            }`}
+          >
+            Noticias
+          </button>
+        </div>
+      </div>
+
       <div className="max-w-md mx-auto px-4 py-6">
         <div className="space-y-5">
           {news.map((item) => (

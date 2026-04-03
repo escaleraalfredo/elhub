@@ -1,7 +1,8 @@
+// app/noticias/[id]/page.tsx
 "use client";
 
 import { useParams, useRouter, useSearchParams } from "next/navigation";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { ThumbsUp, ThumbsDown, MessageCircle, Smile, ArrowLeft, X, Heart, Share2 } from "lucide-react";
 import { useGamification } from "@/lib/gamificationContext";
 import { useNews } from "@/lib/newsContext";
@@ -25,8 +26,6 @@ export default function ArticlePage() {
   const { addPoints } = useGamification();
   const { news, updateNews } = useNews();
 
-  const article = news.find(item => item.id === articleId);
-
   const [openEmojiPicker, setOpenEmojiPicker] = useState(false);
   const [showComments, setShowComments] = useState(shouldOpenComments);
   const [newComment, setNewComment] = useState("");
@@ -43,8 +42,19 @@ export default function ArticlePage() {
     "😍", "🤯", "🙄", "💯", "🚀", "🍆", "🥲", "👑"
   ];
 
+  // Live sync with global news context
+  const [article, setArticle] = useState(() => news.find(item => item.id === articleId));
+
+  useEffect(() => {
+    const found = news.find(item => item.id === articleId);
+    setArticle(found);
+  }, [news, articleId]);
+
+  if (!article) {
+    return null; // loading.tsx will handle it
+  }
+
   const handleVote = (vote: "up" | "down") => {
-    if (!article) return;
     addPoints(2, "Article vote");
 
     updateNews(article.id, (item) => {
@@ -68,8 +78,6 @@ export default function ArticlePage() {
   };
 
   const addReaction = (emoji: string) => {
-    if (!article) return;
-
     updateNews(article.id, (item) => {
       const current = item.reactions[emoji] || 0;
       addPoints(1, "Article emoji");
@@ -78,7 +86,6 @@ export default function ArticlePage() {
         reactions: { ...item.reactions, [emoji]: current + 1 }
       };
     });
-
     setOpenEmojiPicker(false);
   };
 
@@ -119,12 +126,8 @@ export default function ArticlePage() {
     }
   };
 
-  if (!article) {
-    return <div className="min-h-screen flex items-center justify-center text-white">Cargando artículo...</div>;
-  }
-
   return (
-    <div className="min-h-screen bg-dark-bg">
+    <div className="min-h-screen bg-dark-bg pb-24">
       {/* Header */}
       <div className="sticky top-0 bg-zinc-950 border-b border-zinc-800 z-50">
         <div className="max-w-md mx-auto px-4 py-4 flex items-center justify-between">
@@ -199,7 +202,7 @@ export default function ArticlePage() {
             )}
           </div>
 
-          {/* Action Bar - Clean & Small Icons */}
+          {/* Action Bar - Tight spacing under emojis (no extra space) */}
           <div className="flex items-center justify-between text-zinc-400 border-t border-zinc-800 pt-6">
             <div className="flex gap-8">
               <button 
@@ -239,7 +242,7 @@ export default function ArticlePage() {
 
       {/* Emoji Picker */}
       {openEmojiPicker && (
-        <div className="fixed bottom-20 left-0 right-0 max-w-md mx-auto px-4 z-50">
+        <div className="fixed bottom-28 left-0 right-0 max-w-md mx-auto px-4 z-50">
           <div className="bg-zinc-800 rounded-3xl p-5 shadow-2xl flex flex-wrap gap-5 text-4xl justify-center">
             {emojis.map(emoji => (
               <button

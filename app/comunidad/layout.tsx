@@ -1,8 +1,8 @@
+// app/comunidad/layout.tsx
 "use client";
 
 import { usePathname } from "next/navigation";
 import Link from "next/link";
-import { MessageCircle, Image, Users, BarChart3 } from "lucide-react";
 
 export default function ComunidadLayout({
   children,
@@ -18,48 +18,48 @@ export default function ComunidadLayout({
 
   return (
     <div className="min-h-screen bg-dark-bg pb-20">
-      {/* Persistent Comunidad Sub Tabs */}
+      {/* Single Clean Sub Tab Bar */}
       <div className="sticky top-[57px] bg-zinc-950 border-b border-zinc-800 z-40">
-        <div className="max-w-md mx-auto">
-          <div className="flex items-center justify-around py-3">
+        <div className="max-w-md mx-auto px-4">
+          <div className="flex">
             <Link
               href="/comunidad/temas"
-              className={`flex flex-col items-center gap-1 transition-all ${
-                isTemas ? "text-pr-red" : "text-zinc-400"
+              className={`flex-1 py-4 text-sm font-medium text-center transition-all relative ${
+                isTemas ? "text-white" : "text-zinc-400 hover:text-zinc-300"
               }`}
             >
-              <MessageCircle className={`w-5 h-5 ${isTemas ? "fill-pr-red" : ""}`} />
-              <span className="text-xs font-medium">Temas</span>
+              Temas
+              {isTemas && <div className="absolute bottom-0 left-0 right-0 h-0.5 bg-pr-red" />}
             </Link>
 
             <Link
               href="/comunidad/memes"
-              className={`flex flex-col items-center gap-1 transition-all ${
-                isMemes ? "text-pr-red" : "text-zinc-400"
+              className={`flex-1 py-4 text-sm font-medium text-center transition-all relative ${
+                isMemes ? "text-white" : "text-zinc-400 hover:text-zinc-300"
               }`}
             >
-              <Image className={`w-5 h-5 ${isMemes ? "fill-pr-red" : ""}`} />
-              <span className="text-xs font-medium">Memes</span>
+              Memes
+              {isMemes && <div className="absolute bottom-0 left-0 right-0 h-0.5 bg-pr-red" />}
             </Link>
 
             <Link
               href="/comunidad/pueblos"
-              className={`flex flex-col items-center gap-1 transition-all ${
-                isPueblos ? "text-pr-red" : "text-zinc-400"
+              className={`flex-1 py-4 text-sm font-medium text-center transition-all relative ${
+                isPueblos ? "text-white" : "text-zinc-400 hover:text-zinc-300"
               }`}
             >
-              <Users className={`w-5 h-5 ${isPueblos ? "fill-pr-red" : ""}`} />
-              <span className="text-xs font-medium">Pueblos</span>
+              Pueblos
+              {isPueblos && <div className="absolute bottom-0 left-0 right-0 h-0.5 bg-pr-red" />}
             </Link>
 
             <Link
               href="/comunidad/encuestas"
-              className={`flex flex-col items-center gap-1 transition-all ${
-                isEncuestas ? "text-pr-red" : "text-zinc-400"
+              className={`flex-1 py-4 text-sm font-medium text-center transition-all relative ${
+                isEncuestas ? "text-white" : "text-zinc-400 hover:text-zinc-300"
               }`}
             >
-              <BarChart3 className={`w-5 h-5 ${isEncuestas ? "fill-pr-red" : ""}`} />
-              <span className="text-xs font-medium">Encuestas</span>
+              Encuestas
+              {isEncuestas && <div className="absolute bottom-0 left-0 right-0 h-0.5 bg-pr-red" />}
             </Link>
           </div>
         </div>

@@ -1,93 +1,112 @@
 "use client";
-
-import { useState } from "react";
-import { Heart, MessageCircle, Share2, Music } from "lucide-react";
-import { useGamification } from "@/lib/gamificationContext";
+import { useState, useRef } from "react";
+import { Heart, MessageCircle, Share2 } from "lucide-react";
 import BottomNav from "@/components/BottomNav";
+import { toast } from "sonner";
 
 export default function ReelsPage() {
-  const { addPoints } = useGamification();
-  const [currentIndex, setCurrentIndex] = useState(0);
-  const [likedReels, setLikedReels] = useState<number[]>([]);
-  const [showLikeAnimation, setShowLikeAnimation] = useState(false);
+  const [reels, setReels] = useState([
+    {
+      id: 1,
+      username: "@bayamonero",
+      caption: "Un chinchorro en Piñones al atardecer 🔥 ¿Quién viene?",
+      likes: 1240,
+      liked: false,
+      comments: 89,
+      image: "https://picsum.photos/id/1015/1080/1920",
+    },
+    {
+      id: 2,
+      username: "@santurcevibes",
+      caption: "Bad Bunny en el Coliseo - la energía estaba brutal",
+      likes: 3420,
+      liked: true,
+      comments: 156,
+      image: "https://picsum.photos/id/870/1080/1920",
+    },
+  ]);
 
-  const reels = [
-    { id: 1, username: "@santurcevibes", caption: "La Placita un viernes por la noche 🔥 ¿Quién viene?", music: "Bad Bunny - Tití Me Preguntó", likes: 12400, comments: 342, image: "https://picsum.photos/id/1015/800/1200" },
-    { id: 2, username: "@playero_pr", caption: "Atardecer en Luquillo con el perreo sonando 🌅", music: "Residente - Que Hablen", likes: 8900, comments: 156, image: "https://picsum.photos/id/1018/800/1200" },
-    { id: 3, username: "@chinchorropr", caption: "Alcapurrias recién salidas del kiosko en Piñones 🍤", music: "Daddy Yankee - Gasolina", likes: 15600, comments: 289, image: "https://picsum.photos/id/106/800/1200" },
-    { id: 4, username: "@boricua_vibes", caption: "Cuando el corillo se junta y empieza el perreo sin parar 😂", music: "Anuel AA - China", likes: 9800, comments: 421, image: "https://picsum.photos/id/133/800/1200" },
-    { id: 5, username: "@playa_pr", caption: "Domingo en Escambrón con el sonido a todo volumen", music: "Ozuna - El Farsante", likes: 7200, comments: 198, image: "https://picsum.photos/id/201/800/1200" },
-    { id: 6, username: "@kiosko_vibes", caption: "Empanadillas de carne y Medalla bien fría en Piñones", music: "Bad Bunny - Yo Perreo Sola", likes: 11300, comments: 267, image: "https://picsum.photos/id/237/800/1200" },
-    { id: 7, username: "@rooftop_pr", caption: "Rooftop en Condado con la mejor vista de San Juan", music: "Karol G - Tusa", likes: 6700, comments: 154, image: "https://picsum.photos/id/180/800/1200" },
-    { id: 8, username: "@fiestero_pr", caption: "Cuando suena el dembow y todo el mundo se suelta", music: "Rochy RD - El Jefe", likes: 14500, comments: 512, image: "https://picsum.photos/id/251/800/1200" },
-  ];
+  const [currentIndex, setCurrentIndex] = useState(0);
+  const containerRef = useRef<HTMLDivElement>(null);
 
   const currentReel = reels[currentIndex];
 
-  const toggleLike = () => {
-    if (likedReels.includes(currentReel.id)) {
-      setLikedReels(prev => prev.filter(id => id !== currentReel.id));
-    } else {
-      setLikedReels(prev => [...prev, currentReel.id]);
-      addPoints(5, "Reel like");
-      setShowLikeAnimation(true);
-      setTimeout(() => setShowLikeAnimation(false), 800);
-    }
+  const toggleLikeReel = () => {
+    setReels(prev =>
+      prev.map((r, i) =>
+        i === currentIndex
+          ? {
+              ...r,
+              liked: !r.liked,
+              likes: r.liked ? r.likes - 1 : r.likes + 1,
+            }
+          : r
+      )
+    );
+    toast.success(currentReel.liked ? "Like removido" : "❤️ Like");
   };
 
   return (
-    <div className="min-h-screen bg-black pb-20 overflow-hidden">
-      <div className="relative h-screen max-w-md mx-auto">
-        {reels.map((reel, index) => (
+    <div className="h-[100dvh] bg-black flex flex-col overflow-hidden">
+      
+      {/* Reels Container */}
+      <div
+        ref={containerRef}
+        className="flex-1 overflow-y-auto snap-y snap-mandatory scrollbar-hide"
+        onScroll={(e) => {
+          const containerHeight = e.currentTarget.clientHeight;
+          const scrollTop = e.currentTarget.scrollTop;
+          const newIndex = Math.round(scrollTop / containerHeight);
+
+          if (newIndex !== currentIndex && newIndex >= 0 && newIndex < reels.length) {
+            setCurrentIndex(newIndex);
+          }
+        }}
+      >
+        {reels.map((reel) => (
           <div
             key={reel.id}
-            className={`absolute inset-0 transition-opacity duration-300 ${index === currentIndex ? 'opacity-100' : 'opacity-0 pointer-events-none'}`}
-            onDoubleClick={toggleLike}
+            className="h-[100dvh] w-full snap-start relative flex-shrink-0"
           >
-            <img src={reel.image} alt="reel" className="w-full h-full object-cover" />
+            {/* Image */}
+            <img
+              src={reel.image}
+              alt="reel"
+              className="absolute inset-0 w-full h-full object-cover"
+            />
 
-            <div className="absolute inset-0 bg-gradient-to-b from-black/30 via-transparent to-black/90" />
+            {/* Gradient */}
+            <div className="absolute inset-0 bg-gradient-to-b from-black/30 via-transparent to-black/80" />
 
-            {showLikeAnimation && index === currentIndex && (
-              <div className="absolute inset-0 flex items-center justify-center pointer-events-none">
-                <Heart className="w-28 h-28 text-red-500 fill-red-500 scale-150 animate-ping" />
-              </div>
-            )}
-
-            <div className="absolute bottom-28 left-4 right-4 text-white z-10">
+            {/* Bottom Content */}
+            <div className="absolute bottom-[calc(env(safe-area-inset-bottom)+90px)] left-4 right-4 text-white z-10">
               <div className="flex items-center gap-3 mb-3">
-                <div className="w-9 h-9 bg-white/30 backdrop-blur rounded-full flex items-center justify-center text-xl">👤</div>
-                <div><p className="font-semibold">{reel.username}</p></div>
+                <div className="w-10 h-10 bg-zinc-700 rounded-full" />
+                <div className="font-semibold text-base">{reel.username}</div>
               </div>
-              <p className="text-[15px] leading-tight mb-3">{reel.caption}</p>
-              <div className="flex items-center gap-2 text-sm opacity-90">
-                <Music className="w-4 h-4" />
-                <span>{reel.music}</span>
-              </div>
+              <p className="text-[15px] leading-snug pr-14">
+                {reel.caption}
+              </p>
             </div>
 
-            <div className="absolute right-4 bottom-32 flex flex-col items-center gap-6 z-10">
-              <button onClick={toggleLike} className="flex flex-col items-center">
-                <div className="p-3 rounded-full bg-white/20">
-                  <Heart className={`w-8 h-8 transition-all ${likedReels.includes(reel.id) ? "text-red-500 fill-red-500" : "text-white"}`} />
-                </div>
-                <span className="text-xs text-white mt-1">
-                  {(likedReels.includes(reel.id) ? reel.likes + 1 : reel.likes).toLocaleString()}
-                </span>
+            {/* Right Actions */}
+            <div className="absolute bottom-[calc(env(safe-area-inset-bottom)+90px)] right-4 flex flex-col items-center gap-6 z-20">
+              <button onClick={toggleLikeReel} className="flex flex-col items-center">
+                <Heart
+                  className={`w-10 h-10 ${
+                    reel.liked ? "fill-red-500 text-red-500" : "text-white"
+                  }`}
+                />
+                <span className="text-xs mt-1">{reel.likes}</span>
               </button>
 
               <button className="flex flex-col items-center">
-                <div className="p-3 bg-white/20 rounded-full">
-                  <MessageCircle className="w-8 h-8 text-white" />
-                </div>
-                <span className="text-xs text-white mt-1">{reel.comments}</span>
+                <MessageCircle className="w-10 h-10 text-white" />
+                <span className="text-xs mt-1">{reel.comments}</span>
               </button>
 
               <button className="flex flex-col items-center">
-                <div className="p-3 bg-white/20 rounded-full">
-                  <Share2 className="w-8 h-8 text-white" />
-                </div>
-                <span className="text-xs text-white mt-1">Share</span>
+                <Share2 className="w-10 h-10 text-white" />
               </button>
             </div>
           </div>
