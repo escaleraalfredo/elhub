@@ -5,10 +5,28 @@ import BottomNav from "@/components/BottomNav";
 import { toast } from "sonner";
 import { useGamification } from "@/lib/gamificationContext";
 
+// Define the allowed emojis as keys
+type ReactionEmoji = "😂" | "🔥" | "🥲" | "👑";
+
+// Reactions type with optional emojis
+type Reactions = Partial<Record<ReactionEmoji, number>>;
+
+type Meme = {
+  id: number;
+  username: string;
+  image: string;
+  caption: string;
+  likes: number;
+  liked: boolean;
+  comments: number;
+  time: string;
+  reactions: Reactions;
+};
+
 export default function MemesPage() {
   const { addPoints } = useGamification();
 
-  const [memes, setMemes] = useState([
+  const [memes, setMemes] = useState<Meme[]>([
     {
       id: 1,
       username: "@bayamonero",
@@ -18,11 +36,7 @@ export default function MemesPage() {
       liked: false,
       comments: 28,
       time: "15m",
-      reactions: {
-        "😂": 45,
-        "🔥": 32,
-        "🥲": 18,
-      },
+      reactions: { "😂": 45, "🔥": 32, "🥲": 18 },
     },
     {
       id: 2,
@@ -33,11 +47,7 @@ export default function MemesPage() {
       liked: true,
       comments: 67,
       time: "2h",
-      reactions: {
-        "😂": 89,
-        "🔥": 67,
-        "👑": 45,
-      },
+      reactions: { "😂": 89, "🔥": 67, "👑": 45 },
     },
     {
       id: 3,
@@ -48,42 +58,40 @@ export default function MemesPage() {
       liked: false,
       comments: 45,
       time: "5h",
-      reactions: {
-        "😂": 67,
-        "🥲": 23,
-      },
+      reactions: { "😂": 67, "🥲": 23 },
     },
   ]);
 
   const toggleLike = (memeId: number) => {
-    setMemes(prev => prev.map(meme => {
-      if (meme.id === memeId) {
-        return {
-          ...meme,
-          liked: !meme.liked,
-          likes: meme.liked ? meme.likes - 1 : meme.likes + 1
-        };
-      }
-      return meme;
-    }));
+    setMemes((prev) =>
+      prev.map((meme) =>
+        meme.id === memeId
+          ? {
+              ...meme,
+              liked: !meme.liked,
+              likes: meme.liked ? meme.likes - 1 : meme.likes + 1,
+            }
+          : meme
+      )
+    );
     toast.success("❤️ Me gusta");
     addPoints(2, "Meme like");
   };
 
-  const addReaction = (memeId: number, emoji: string) => {
-    setMemes(prev => prev.map(meme => {
-      if (meme.id === memeId) {
-        const currentCount = meme.reactions[emoji] || 0;
+  const addReaction = (memeId: number, emoji: ReactionEmoji) => {
+    setMemes((prev) =>
+      prev.map((meme) => {
+        if (meme.id !== memeId) return meme;
+
         return {
           ...meme,
           reactions: {
             ...meme.reactions,
-            [emoji]: currentCount + 1
-          }
+            [emoji]: (meme.reactions[emoji] ?? 0) + 1,
+          },
         };
-      }
-      return meme;
-    }));
+      })
+    );
     toast.success(`Reaccionaste con ${emoji}`);
     addPoints(1, "Meme reaction");
   };
@@ -96,16 +104,14 @@ export default function MemesPage() {
             key={meme.id}
             className="bg-zinc-900 rounded-3xl overflow-hidden border border-zinc-800"
           >
-            {/* Meme Image */}
             <div className="relative">
-              <img 
-                src={meme.image} 
-                alt="meme" 
+              <img
+                src={meme.image}
+                alt="meme"
                 className="w-full aspect-square object-cover"
               />
             </div>
 
-            {/* Caption + Timestamp */}
             <div className="p-5">
               <div className="flex items-center gap-3 mb-3">
                 <div className="w-8 h-8 bg-zinc-700 rounded-full" />
@@ -119,32 +125,40 @@ export default function MemesPage() {
                 {meme.caption}
               </p>
 
-              {/* Discord-style Reactions */}
+              {/* Reactions */}
               <div className="flex flex-wrap gap-2 mb-6">
                 {Object.entries(meme.reactions).map(([emoji, count]) => (
                   <button
                     key={emoji}
-                    onClick={() => addReaction(meme.id, emoji)}
+                    onClick={() => addReaction(meme.id, emoji as ReactionEmoji)}
                     className="bg-zinc-800 hover:bg-zinc-700 transition-all px-4 py-1.5 rounded-full text-sm flex items-center gap-1.5 active:scale-95"
                   >
                     {emoji} <span className="text-zinc-400 text-xs">{count}</span>
                   </button>
                 ))}
+
+                <button
+                  onClick={() => toast.info("Selector de emojis pronto disponible")}
+                  className="bg-zinc-800 hover:bg-zinc-700 transition-all px-4 py-1.5 rounded-full text-sm flex items-center gap-1.5 active:scale-95"
+                >
+                  <Smile className="w-4 h-4" />
+                </button>
               </div>
 
-              {/* Action Bar - Only ONE emoji icon next to Like */}
+              {/* Action Bar */}
               <div className="flex items-center justify-between text-sm border-t border-zinc-800 pt-4">
                 <div className="flex items-center gap-6">
                   <button
                     onClick={() => toggleLike(meme.id)}
-                    className={`flex items-center gap-2 transition-all ${meme.liked ? "text-red-500" : "text-zinc-400 hover:text-red-500"}`}
+                    className={`flex items-center gap-2 transition-all ${
+                      meme.liked ? "text-red-500" : "text-zinc-400 hover:text-red-500"
+                    }`}
                   >
                     <Heart className={`w-5 h-5 ${meme.liked ? "fill-current" : ""}`} />
                     <span>{meme.likes}</span>
                   </button>
 
-                  {/* Single Emoji Icon - Right next to Like */}
-                  <button 
+                  <button
                     onClick={() => toast.info("Selector de emojis pronto disponible")}
                     className="flex items-center gap-2 text-zinc-400 hover:text-white transition-all"
                   >
@@ -157,7 +171,7 @@ export default function MemesPage() {
                   <span>{meme.comments}</span>
                 </button>
 
-                <button 
+                <button
                   onClick={() => toast.success("Compartido")}
                   className="flex items-center gap-2 text-zinc-400 hover:text-white transition-all"
                 >
