@@ -1,5 +1,5 @@
 "use client";
-import { useState } from "react";
+import { useState, useRef, useEffect } from "react";
 import { ChevronLeft, Heart } from "lucide-react";
 import BottomNav from "@/components/BottomNav";
 import { toast } from "sonner";
@@ -7,6 +7,7 @@ import { useRouter } from "next/navigation";
 
 export default function EncuestaCommentsPage() {
   const router = useRouter();
+  const inputRef = useRef<HTMLInputElement>(null);
 
   const [poll] = useState({
     id: 1,
@@ -101,44 +102,47 @@ export default function EncuestaCommentsPage() {
   const startReply = (commentId: number) => {
     setReplyingTo(commentId);
     setNewComment("");
-    setTimeout(() => {
-      const input = document.querySelector('input') as HTMLInputElement;
-      input?.focus();
-    }, 50);
   };
+
+  // Auto-focus input when replyingTo changes
+  useEffect(() => {
+    if (replyingTo !== null) {
+      inputRef.current?.focus();
+    }
+  }, [replyingTo]);
 
   return (
     <div className="min-h-screen bg-dark-bg flex flex-col">
-      {/* Sticky Header - Below Sub Tabs */}
-      <div className="sticky top-[114px] bg-zinc-950 border-b border-zinc-800 z-50 shrink-0">
-        <div className="max-w-md mx-auto px-4 py-4 flex items-center gap-4">
+      {/* Sticky Poll Header - aligned under sub-tabs */}
+      <div className="sticky top-[57px] bg-zinc-950 border-b border-zinc-800 z-50 shrink-0">
+        <div className="max-w-md mx-auto px-3 py-3 flex items-center gap-3 sm:gap-4">
           <button 
             onClick={() => router.back()} 
             className="text-zinc-400 hover:text-white -ml-1"
           >
             <ChevronLeft className="w-7 h-7" />
           </button>
-          <div className="font-semibold text-white text-[15px] leading-tight line-clamp-2 flex-1">
+          <div className="font-semibold text-white text-[14px] sm:text-[15px] leading-tight line-clamp-2 flex-1">
             {poll.question}
           </div>
         </div>
       </div>
 
-      {/* Scrollable Comments Area */}
+      {/* Scrollable Comments */}
       <div className="flex-1 overflow-y-auto pb-24">
-        <div className="max-w-md mx-auto px-4 pt-6">
-          <div className="space-y-7">
+        <div className="max-w-md mx-auto px-3 pt-6">
+          <div className="space-y-6 sm:space-y-7">
             {comments.map((comment) => (
-              <div key={comment.id} className="flex gap-3">
-                <div className="w-8 h-8 bg-zinc-700 rounded-full flex-shrink-0 mt-1" />
+              <div key={comment.id} className="flex gap-2 sm:gap-3">
+                <div className="w-8 h-8 sm:w-8 sm:h-8 bg-zinc-700 rounded-full flex-shrink-0 mt-1" />
 
                 <div className="flex-1">
-                  <div className="text-[15px]">
+                  <div className="text-[14px] sm:text-[15px] break-words">
                     <span className="font-semibold text-white">{comment.username}</span>{" "}
                     <span className="text-zinc-200">{comment.text}</span>
                   </div>
 
-                  <div className="flex items-center gap-5 text-xs text-zinc-500 mt-1">
+                  <div className="flex items-center gap-3 sm:gap-5 text-xs text-zinc-500 mt-1">
                     <span>{comment.time}</span>
 
                     <button
@@ -159,16 +163,16 @@ export default function EncuestaCommentsPage() {
 
                   {/* Replies */}
                   {comment.replies.length > 0 && (
-                    <div className="mt-4 space-y-5 ml-2">
+                    <div className="mt-4 space-y-4 sm:space-y-5 ml-2">
                       {comment.replies.map((reply) => (
-                        <div key={reply.id} className="flex gap-3">
-                          <div className="w-6 h-6 bg-zinc-700 rounded-full flex-shrink-0 mt-0.5" />
+                        <div key={reply.id} className="flex gap-2 sm:gap-3">
+                          <div className="w-6 h-6 sm:w-6 sm:h-6 bg-zinc-700 rounded-full flex-shrink-0 mt-0.5" />
                           <div className="flex-1">
-                            <div className="text-[15px]">
+                            <div className="text-[14px] sm:text-[15px] break-words">
                               <span className="font-semibold">{reply.username}</span>{" "}
                               <span className="text-zinc-200">{reply.text}</span>
                             </div>
-                            <div className="flex items-center gap-4 text-xs text-zinc-500 mt-1">
+                            <div className="flex items-center gap-3 sm:gap-4 text-xs text-zinc-500 mt-1">
                               <span>{reply.time}</span>
                               <button
                                 onClick={() => toggleLike(comment.id, true, reply.id)}
@@ -190,17 +194,18 @@ export default function EncuestaCommentsPage() {
         </div>
       </div>
 
-      {/* Sticky Comment Input - Proper App Layout Style */}
-      <div className="sticky bottom-16 bg-zinc-950 border-t border-zinc-800 z-40 shrink-0 px-4 py-3">
+      {/* Sticky Comment Input */}
+      <div className="sticky bottom-16 bg-zinc-950 border-t border-zinc-800 z-40 shrink-0 px-3 sm:px-4 py-3">
         <div className="max-w-md mx-auto">
-          <div className="bg-zinc-900 rounded-3xl p-4 flex gap-3 items-center border border-zinc-800">
+          <div className="bg-zinc-900 rounded-3xl p-4 flex gap-2 sm:gap-3 items-center border border-zinc-800">
             <div className="w-8 h-8 bg-zinc-700 rounded-full flex-shrink-0" />
             <input
+              ref={inputRef}
               type="text"
               value={newComment}
               onChange={(e) => setNewComment(e.target.value)}
               placeholder={replyingTo ? "Responder comentario..." : "Añade un comentario..."}
-              className="flex-1 bg-transparent text-[15px] placeholder-zinc-500 focus:outline-none"
+              className="flex-1 min-w-0 bg-transparent text-[14px] sm:text-[15px] placeholder-zinc-500 focus:outline-none"
               onKeyDown={(e) => e.key === "Enter" && postComment()}
             />
             <button

@@ -2,7 +2,7 @@
 "use client";
 
 import { useParams, useRouter, useSearchParams } from "next/navigation";
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import { ThumbsUp, ThumbsDown, MessageCircle, Smile, ArrowLeft, X, Heart, Share2 } from "lucide-react";
 import { useGamification } from "@/lib/gamificationContext";
 import { useNews } from "@/lib/newsContext";
@@ -29,7 +29,6 @@ export default function ArticlePage() {
   const [openEmojiPicker, setOpenEmojiPicker] = useState(false);
   const [showComments, setShowComments] = useState(shouldOpenComments);
   const [newComment, setNewComment] = useState("");
-
   const [comments, setComments] = useState<Comment[]>([
     { id: 1, username: "@boricua87", text: "Esto es una vergüenza, ya es hora de que tomen medidas reales.", time: "hace 12 min", likes: 24, liked: false },
     { id: 2, username: "@playero_pr", text: "Totalmente de acuerdo. La inseguridad está fuera de control.", time: "hace 35 min", likes: 18, liked: true },
@@ -50,13 +49,26 @@ export default function ArticlePage() {
     setArticle(found);
   }, [news, articleId]);
 
-  if (!article) {
-    return null; // loading.tsx will handle it
-  }
+  const inputRef = useRef<HTMLInputElement>(null);
+  useEffect(() => {
+    if (showComments) {
+      setTimeout(() => inputRef.current?.focus(), 100);
+    }
+  }, [showComments]);
+
+  const [touchStartY, setTouchStartY] = useState<number | null>(null);
+  const handleTouchStart = (e: React.TouchEvent) => setTouchStartY(e.touches[0].clientY);
+  const handleTouchEnd = (e: React.TouchEvent) => {
+    if (!touchStartY) return;
+    const deltaY = e.changedTouches[0].clientY - touchStartY;
+    if (deltaY > 80) setShowComments(false);
+    setTouchStartY(null);
+  };
+
+  if (!article) return null; // loading.tsx will handle it
 
   const handleVote = (vote: "up" | "down") => {
     addPoints(2, "Article vote");
-
     updateNews(article.id, (item) => {
       let newLikes = item.likes;
       let newDislikes = item.dislikes;
@@ -103,6 +115,11 @@ export default function ArticlePage() {
     };
     setComments([newCommentObj, ...comments]);
     setNewComment("");
+
+    updateNews(article.id, (item) => ({
+      ...item,
+      comments: item.comments + 1
+    }));
   };
 
   const toggleCommentLike = (id: number) => {
@@ -146,11 +163,7 @@ export default function ArticlePage() {
       <div className="max-w-md mx-auto">
         {article.image && (
           <div className="relative h-72">
-            <img 
-              src={article.image} 
-              alt={article.title} 
-              className="w-full h-full object-cover" 
-            />
+            <img src={article.image} alt={article.title} className="w-full h-full object-cover" />
             <div className="absolute bottom-0 left-0 right-0 bg-gradient-to-t from-black/80 to-transparent h-24" />
           </div>
         )}
@@ -162,28 +175,18 @@ export default function ArticlePage() {
             <span className="text-zinc-500">• 5 min lectura</span>
           </div>
 
-          <h1 className="text-2xl font-bold leading-tight text-white mb-6">
-            {article.title}
-          </h1>
+          <h1 className="text-2xl font-bold leading-tight text-white mb-6">{article.title}</h1>
 
-          {/* Long article content */}
+          {/* Article content */}
           <div className="text-zinc-200 leading-relaxed mb-10 text-[15px] space-y-6">
             <p>El gobernador de Puerto Rico, junto a su equipo de seguridad, anunció esta mañana un ambicioso plan integral para combatir la ola de criminalidad que afecta principalmente a las áreas metropolitanas de San Juan, Bayamón y Carolina.</p>
-            
             <p>El plan incluye la instalación inmediata de más de 500 nuevas cámaras de vigilancia de alta definición con reconocimiento facial, el aumento de 300 agentes en patrullaje nocturno y la creación de una unidad especial contra el crimen organizado.</p>
-            
             <p>“No podemos seguir permitiendo que nuestras familias vivan con miedo. Hoy comenzamos una nueva etapa donde la seguridad será prioridad número uno”, declaró el gobernador durante la rueda de prensa celebrada en La Fortaleza.</p>
-            
             <p>Según datos preliminares del Negociado de la Policía, los delitos violentos han aumentado un 18% en los últimos 12 meses. Las comunidades más afectadas han sido residenciales como Monte Hatillo, Villa Palmeras y sectores de Cataño.</p>
-            
             <p>El plan también contempla mayor colaboración con agencias federales, incluyendo la DEA y el FBI, para desmantelar redes de narcotráfico que operan en la isla. Se espera que los primeros resultados visibles se vean dentro de los próximos 90 días.</p>
-            
             <p>Por su parte, líderes comunitarios han recibido la noticia con cautela. “Esperamos que no sea solo otro anuncio. Queremos ver acción real en las calles”, comentó doña Carmen López, residente de Bayamón desde hace 45 años.</p>
-            
             <p>El costo estimado del plan asciende a $45 millones, fondos que provendrán de una combinación de presupuesto estatal y asignaciones federales. La oposición ha criticado la medida por considerarla “insuficiente” y ha pedido un debate más amplio en la Asamblea Legislativa.</p>
-            
             <p>Este anuncio ocurre justo una semana después del trágico asesinato de un joven de 19 años en una gasolinera de Río Piedras, caso que generó gran indignación en las redes sociales y motivó múltiples protestas pacíficas en diferentes pueblos.</p>
-            
             <p>¿Qué opinas tú? ¿Crees que este plan será suficiente para mejorar la seguridad en Puerto Rico?</p>
           </div>
 
@@ -202,14 +205,14 @@ export default function ArticlePage() {
             )}
           </div>
 
-          {/* Action Bar - Tight spacing under emojis (no extra space) */}
+          {/* Action Bar */}
           <div className="flex items-center justify-between text-zinc-400 border-t border-zinc-800 pt-6">
             <div className="flex gap-8">
               <button 
                 onClick={() => handleVote("up")} 
                 className={`flex items-center gap-1.5 hover:text-white transition-colors ${article.userVote === "up" ? "text-pr-red" : ""}`}
               >
-                <ThumbsUp className={`w-5 h-5 ${article.userVote === "up" ? "fill-pr-red text-pr-red" : ""}`} />
+                <ThumbsUp className={`w-5 h-5 ${article.userVote === "up" ? "fill-pr-red text-pr-red" : "text-zinc-400"}`} />
                 <span className="text-sm">{article.likes}</span>
               </button>
 
@@ -217,7 +220,7 @@ export default function ArticlePage() {
                 onClick={() => handleVote("down")} 
                 className={`flex items-center gap-1.5 hover:text-white transition-colors ${article.userVote === "down" ? "text-red-500" : ""}`}
               >
-                <ThumbsDown className={`w-5 h-5 ${article.userVote === "down" ? "fill-red-500 text-red-500" : ""}`} />
+                <ThumbsDown className={`w-5 h-5 ${article.userVote === "down" ? "fill-red-500 text-red-500" : "text-zinc-400"}`} />
                 <span className="text-sm">{article.dislikes}</span>
               </button>
 
@@ -226,14 +229,11 @@ export default function ArticlePage() {
                 className="flex items-center gap-1.5 hover:text-white transition-colors"
               >
                 <MessageCircle className="w-5 h-5" />
-                <span className="text-sm">{article.comments}</span>
+                <span className="text-sm">{comments.length}</span>
               </button>
             </div>
 
-            <button 
-              onClick={() => setOpenEmojiPicker(!openEmojiPicker)} 
-              className="hover:text-white transition-colors p-1"
-            >
+            <button onClick={() => setOpenEmojiPicker(!openEmojiPicker)} className="hover:text-white transition-colors p-1">
               <Smile className="w-5 h-5" />
             </button>
           </div>
@@ -260,7 +260,12 @@ export default function ArticlePage() {
       {/* Comments Bottom Sheet */}
       {showComments && (
         <div className="fixed inset-0 bg-black/80 z-50 flex items-end">
-          <div className="bg-zinc-900 w-full max-w-md mx-auto rounded-t-3xl max-h-[85vh] flex flex-col">
+          <div 
+            className="bg-zinc-900 w-full max-w-md mx-auto rounded-t-3xl max-h-[85vh] flex flex-col"
+            onTouchStart={handleTouchStart}
+            onTouchEnd={handleTouchEnd}
+          >
+            <div className="w-10 h-1.5 bg-zinc-600 rounded-full mx-auto mb-3" />
             <div className="p-4 border-b border-zinc-700 flex justify-between items-center">
               <h3 className="font-semibold text-lg">Comentarios ({comments.length})</h3>
               <button onClick={() => setShowComments(false)} className="text-zinc-400">
@@ -268,7 +273,7 @@ export default function ArticlePage() {
               </button>
             </div>
 
-            <div className="flex-1 overflow-y-auto p-4 space-y-6 pb-24">
+            <div className="flex-1 overflow-y-auto p-4 space-y-6 pb-32">
               {comments.map((comment) => (
                 <div key={comment.id} className="flex gap-3">
                   <div className="w-9 h-9 bg-zinc-700 rounded-full flex-shrink-0" />
@@ -293,9 +298,10 @@ export default function ArticlePage() {
               ))}
             </div>
 
-            <div className="p-4 border-t border-zinc-700 bg-zinc-900 absolute bottom-0 left-0 right-0 max-w-md mx-auto">
+            <div className="p-4 border-t border-zinc-700 bg-zinc-900 sticky bottom-0">
               <div className="flex gap-3">
                 <input
+                  ref={inputRef}
                   type="text"
                   value={newComment}
                   onChange={(e) => setNewComment(e.target.value)}
