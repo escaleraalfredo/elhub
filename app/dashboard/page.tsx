@@ -14,7 +14,6 @@ export default function Dashboard() {
   const { theme, setTheme, resolvedTheme } = useTheme();
   const [mounted, setMounted] = useState(false);
 
-  // Fix hydration mismatch
   useEffect(() => {
     setMounted(true);
   }, []);
@@ -25,7 +24,7 @@ export default function Dashboard() {
     if (activeTab === "trending") return <TrendingTopics />;
     if (activeTab === "community") return <CommunityTopics />;
     if (activeTab === "profile") return <Profile />;
-    return <div className="text-4xl font-bold text-center mt-20">Página en construcción</div>;
+    return <div className="text-4xl font-bold text-center mt-20 text-zinc-400">Página en construcción</div>;
   };
 
   if (!mounted) {
@@ -48,13 +47,13 @@ export default function Dashboard() {
         <header className="h-16 border-b border-zinc-800 px-8 flex items-center justify-end gap-4">
           <button
             onClick={() => setTheme(resolvedTheme === "dark" ? "light" : "dark")}
-            className="p-3 hover:bg-zinc-800 rounded-3xl"
+            className="p-3 hover:bg-zinc-800 rounded-3xl transition-colors"
           >
             {resolvedTheme === "dark" ? <Sun className="w-6 h-6" /> : <Moon className="w-6 h-6" />}
           </button>
         </header>
 
-        <main className="flex-1 overflow-auto p-8">
+        <main className="flex-1 overflow-auto p-8 bg-zinc-950">
           {renderContent()}
         </main>
       </div>

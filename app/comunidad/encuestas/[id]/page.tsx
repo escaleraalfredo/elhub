@@ -104,7 +104,6 @@ export default function EncuestaCommentsPage() {
     setNewComment("");
   };
 
-  // Auto-focus input when replyingTo changes
   useEffect(() => {
     if (replyingTo !== null) {
       inputRef.current?.focus();
@@ -113,7 +112,6 @@ export default function EncuestaCommentsPage() {
 
   return (
     <div className="min-h-screen bg-dark-bg flex flex-col">
-      {/* Sticky Poll Header - aligned under sub-tabs */}
       <div className="sticky top-[57px] bg-zinc-950 border-b border-zinc-800 z-50 shrink-0">
         <div className="max-w-md mx-auto px-3 py-3 flex items-center gap-3 sm:gap-4">
           <button 
@@ -128,7 +126,6 @@ export default function EncuestaCommentsPage() {
         </div>
       </div>
 
-      {/* Scrollable Comments */}
       <div className="flex-1 overflow-y-auto pb-24">
         <div className="max-w-md mx-auto px-3 pt-6">
           <div className="space-y-6 sm:space-y-7">
@@ -161,7 +158,6 @@ export default function EncuestaCommentsPage() {
                     </button>
                   </div>
 
-                  {/* Replies */}
                   {comment.replies.length > 0 && (
                     <div className="mt-4 space-y-4 sm:space-y-5 ml-2">
                       {comment.replies.map((reply) => (
@@ -194,7 +190,6 @@ export default function EncuestaCommentsPage() {
         </div>
       </div>
 
-      {/* Sticky Comment Input */}
       <div className="sticky bottom-16 bg-zinc-950 border-t border-zinc-800 z-40 shrink-0 px-3 sm:px-4 py-3">
         <div className="max-w-md mx-auto">
           <div className="bg-zinc-900 rounded-3xl p-4 flex gap-2 sm:gap-3 items-center border border-zinc-800">

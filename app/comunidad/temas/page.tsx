@@ -1,10 +1,13 @@
+// app/comunidad/temas/page.tsx
 "use client";
 import { useState, useMemo } from "react";
-import { ArrowUp, ArrowDown, MessageCircle, ChevronDown, Plus } from "lucide-react";
+import { ArrowUp, ArrowDown, MessageCircle, ChevronDown } from "lucide-react";
 import { useGamification } from "@/lib/gamificationContext";
 import BottomNav from "@/components/BottomNav";
 import { toast } from "sonner";
 import { useRouter } from "next/navigation";
+import UnifiedFAB from "@/components/UnifiedFAB";
+import UnifiedCard from "@/components/UnifiedCard";
 
 export default function TemasPage() {
   const router = useRouter();
@@ -67,7 +70,6 @@ export default function TemasPage() {
     return topics.filter(t => t.category === activeFilter);
   }, [topics, activeFilter]);
 
-  // Fixed Upvote / Downvote logic
   const handleVote = (topicId: number, direction: "up" | "down") => {
     setTopics(prev => prev.map(topic => {
       if (topic.id !== topicId) return topic;
@@ -76,11 +78,9 @@ export default function TemasPage() {
       let newUserVote = topic.userVote;
 
       if (topic.userVote === direction) {
-        // Remove vote
         newVotes = direction === "up" ? newVotes - 1 : newVotes + 1;
         newUserVote = null;
       } else {
-        // Change or add vote
         if (topic.userVote === "up") newVotes -= 1;
         if (topic.userVote === "down") newVotes += 1;
         newVotes = direction === "up" ? newVotes + 1 : newVotes - 1;
@@ -96,13 +96,6 @@ export default function TemasPage() {
 
   const openTopic = (topic: any) => {
     router.push(`/comunidad/temas/${topic.id}`);
-  };
-
-  const categories = ["Todos", "Política", "Comida", "Música", "Deportes", "Isla", "Otros", "Fiestas", "Transporte", "Tecnología", "Cultura"] as const;
-
-  const selectFilter = (cat: typeof activeFilter) => {
-    setActiveFilter(cat);
-    setShowFilters(false);
   };
 
   const handleCreateTopic = () => {
@@ -132,6 +125,8 @@ export default function TemasPage() {
     toast.success("¡Tema creado! +10 pts");
   };
 
+  const categories = ["Todos", "Política", "Comida", "Música", "Deportes", "Isla", "Otros", "Fiestas", "Transporte", "Tecnología", "Cultura"] as const;
+
   return (
     <div className="min-h-screen bg-dark-bg pb-20 relative">
       {/* Sticky Filter Bar */}
@@ -155,7 +150,7 @@ export default function TemasPage() {
               {categories.map((cat) => (
                 <button
                   key={cat}
-                  onClick={() => selectFilter(cat)}
+                  onClick={() => { setActiveFilter(cat); setShowFilters(false); }}
                   className={`w-full text-left px-5 py-3 text-sm hover:bg-zinc-800 transition-all flex justify-between items-center ${
                     activeFilter === cat ? "text-pr-red font-medium bg-zinc-800/50" : "text-zinc-300"
                   }`}
@@ -178,13 +173,9 @@ export default function TemasPage() {
         )}
 
         {filteredTopics.map((topic) => (
-          <div
-            key={topic.id}
-            onClick={() => openTopic(topic)}
-            className="bg-zinc-900 rounded-3xl overflow-hidden border border-zinc-800 hover:border-zinc-700 transition-all cursor-pointer active:scale-[0.985]"
-          >
+          <UnifiedCard key={topic.id} onClick={() => openTopic(topic)}>
             <div className="flex">
-              {/* Voting Column - Fixed Upvote */}
+              {/* Voting Column */}
               <div className="w-14 bg-zinc-950 flex flex-col items-center py-4 border-r border-zinc-800">
                 <button
                   onClick={(e) => { e.stopPropagation(); handleVote(topic.id, "up"); }}
@@ -224,17 +215,12 @@ export default function TemasPage() {
                 </div>
               </div>
             </div>
-          </div>
+          </UnifiedCard>
         ))}
       </div>
 
-      {/* Floating + Button */}
-      <button
-        onClick={() => setShowNewTopicModal(true)}
-        className="fixed bottom-24 left-1/2 translate-x-[200%] z-50 w-16 h-16 bg-pr-red hover:bg-red-600 active:bg-red-700 transition-all rounded-full flex items-center justify-center shadow-2xl shadow-pr-red/40 active:scale-95 border-4 border-zinc-950"
-      >
-        <Plus className="w-8 h-8 text-white" />
-      </button>
+      {/* Unified Floating Action Button */}
+      <UnifiedFAB onClick={() => setShowNewTopicModal(true)} />
 
       {/* New Topic Modal */}
       {showNewTopicModal && (

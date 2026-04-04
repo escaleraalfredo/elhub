@@ -30,12 +30,11 @@ export default function RootLayout({
 }) {
   return (
     <html lang="es" className="dark">
-      <body className={`${geistSans.variable} ${geistMono.variable} antialiased bg-[#09090b] text-white`}>
+      <body className={`${geistSans.variable} ${geistMono.variable} bg-dark-bg text-white`}>
         <GamificationProvider>
           <NewsProvider>
             <GlobalHeader />
             {children}
-            <BottomNav />
             <Toaster position="top-center" richColors closeButton />
           </NewsProvider>
         </GamificationProvider>

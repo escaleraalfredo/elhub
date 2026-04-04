@@ -5,10 +5,7 @@ import BottomNav from "@/components/BottomNav";
 import { toast } from "sonner";
 import { useGamification } from "@/lib/gamificationContext";
 
-// Define the allowed emojis as keys
 type ReactionEmoji = "😂" | "🔥" | "🥲" | "👑";
-
-// Reactions type with optional emojis
 type Reactions = Partial<Record<ReactionEmoji, number>>;
 
 type Meme = {
@@ -125,7 +122,6 @@ export default function MemesPage() {
                 {meme.caption}
               </p>
 
-              {/* Reactions */}
               <div className="flex flex-wrap gap-2 mb-6">
                 {Object.entries(meme.reactions).map(([emoji, count]) => (
                   <button
@@ -145,7 +141,6 @@ export default function MemesPage() {
                 </button>
               </div>
 
-              {/* Action Bar */}
               <div className="flex items-center justify-between text-sm border-t border-zinc-800 pt-4">
                 <div className="flex items-center gap-6">
                   <button
@@ -183,10 +178,9 @@ export default function MemesPage() {
         ))}
       </div>
 
-      {/* Floating + Button */}
       <button
         onClick={() => toast.info("Crear meme pronto disponible")}
-        className="fixed bottom-24 left-1/2 translate-x-[200%] z-50 w-16 h-16 bg-pr-red hover:bg-red-600 active:bg-red-700 transition-all rounded-full flex items-center justify-center shadow-2xl shadow-pr-red/40 active:scale-95 border-4 border-zinc-950"
+        className="fixed bottom-24 right-6 z-50 w-16 h-16 bg-pr-red hover:bg-red-600 active:bg-red-700 transition-all rounded-full flex items-center justify-center shadow-2xl shadow-pr-red/40 active:scale-95 border-4 border-zinc-950"
       >
         <Plus className="w-8 h-8 text-white" />
       </button>
