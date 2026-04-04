@@ -18,7 +18,7 @@ export default function ComunidadLayout({
 
   return (
     <div className="min-h-screen bg-dark-bg pb-20">
-      {/* Single Clean Sub Tab Bar */}
+      {/* Sub Tab Bar */}
       <div className="sticky top-[57px] bg-zinc-950 border-b border-zinc-800 z-40">
         <div className="max-w-md mx-auto px-4">
           <div className="flex">

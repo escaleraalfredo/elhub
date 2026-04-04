@@ -1,9 +1,9 @@
 "use client";
 
 import Link from "next/link";
-import { useState, useMemo } from "react";
+import { useState } from "react";
 import { 
-  ThumbsUp, ThumbsDown, MessageCircle, Bookmark, Smile, ChevronDown 
+  ThumbsUp, ThumbsDown, MessageCircle, Bookmark, Smile 
 } from "lucide-react";
 import { useGamification } from "@/lib/gamificationContext";
 import { useNews } from "@/lib/newsContext";
@@ -13,8 +13,6 @@ export default function NoticiasPage() {
   const { news, updateNews } = useNews();
 
   const [openEmojiPicker, setOpenEmojiPicker] = useState<string | null>(null);
-  const [showFilters, setShowFilters] = useState(false);
-  const [activeFilter, setActiveFilter] = useState<string>("Todas");
 
   const emojis = [
     "🔥","❤️","🙌","😂","😢","😡","🤬","💩",
@@ -22,25 +20,6 @@ export default function NoticiasPage() {
     "🖕","👍","👎","🥳","😱","🤔","🇵🇷","🇺🇸",
     "😍","🤯","🙄","💯","🚀","🥲","👑"
   ];
-
-  const sources = [
-    "Todas",
-    "El Nuevo Día",
-    "Primera Hora",
-    "Metro PR",
-    "Telemundo PR",
-    "NotiCel"
-  ];
-
-  const filteredNews = useMemo(() => {
-    if (activeFilter === "Todas") return news;
-    return news.filter(n => n.source === activeFilter);
-  }, [news, activeFilter]);
-
-  const selectFilter = (src: string) => {
-    setActiveFilter(src);
-    setShowFilters(false);
-  };
 
   const handleVote = (id: string, vote: "up" | "down") => {
     updateNews(id, (item) => {
@@ -79,7 +58,7 @@ export default function NoticiasPage() {
   return (
     <div className="min-h-screen bg-[#09090b] pb-20">
 
-      {/* Sticky Header - Minimal & Subliminal Filter (matching Social page) */}
+      {/* Sticky Header - Simplified (no filter) */}
       <div className="sticky top-[57px] bg-zinc-950 border-b border-zinc-800 z-40">
         <div className="max-w-md mx-auto px-4 py-3">
 
@@ -99,44 +78,12 @@ export default function NoticiasPage() {
             </Link>
           </div>
 
-          {/* Minimal Filter Row - Subliminal (same as Social) */}
-          <div className="flex items-center justify-end mt-3 pr-1">
-            <button
-              onClick={() => setShowFilters(!showFilters)}
-              className="flex items-center gap-1.5 text-zinc-400 hover:text-white transition-colors text-sm"
-            >
-              <span className="font-medium">{activeFilter}</span>
-              <ChevronDown className={`w-4 h-4 transition-transform ${showFilters ? "rotate-180" : ""}`} />
-            </button>
-          </div>
         </div>
-
-        {/* Dropdown */}
-        {showFilters && (
-          <div className="max-w-md mx-auto px-4 pb-3">
-            <div className="bg-zinc-900 rounded-2xl border border-zinc-700 shadow-2xl py-1 max-h-[300px] overflow-y-auto">
-              {sources.map((src) => (
-                <button
-                  key={src}
-                  onClick={() => selectFilter(src)}
-                  className={`w-full text-left px-5 py-3 text-sm hover:bg-zinc-800 transition-all flex justify-between items-center ${
-                    activeFilter === src
-                      ? "text-pr-red font-medium bg-zinc-800/50"
-                      : "text-zinc-300"
-                  }`}
-                >
-                  {src}
-                  {activeFilter === src && <span className="text-xs">✓</span>}
-                </button>
-              ))}
-            </div>
-          </div>
-        )}
       </div>
 
       {/* Content */}
       <div className="max-w-md mx-auto px-4 py-6 space-y-5">
-        {filteredNews.map((item) => (
+        {news.map((item) => (
           <div key={item.id} className="card overflow-hidden border border-zinc-800">
 
             <Link href={`/noticias/${item.id}`} className="block">

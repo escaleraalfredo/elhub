@@ -1,70 +1,170 @@
+// lib/newsContext.tsx
 "use client";
-import { useEffect, useState } from "react";
-import { motion } from "framer-motion";
-import NewsDetailModal from "./NewsDetailModal";
-import { getNewsArticles } from "@/lib/db";
-import type { NewsArticle } from "@/lib/types";
 
-const SEED_ARTICLES: NewsArticle[] = [
-  { id: "1", title: "LUMA anuncia nuevo aumento de tarifas para 2026", source: "El Nuevo Día", image: "https://picsum.photos/id/1015/1200/800", views: 18400, created_at: new Date(Date.now() - 12 * 60 * 1000).toISOString() },
-  { id: "2", title: "La Placita registra récord de visitantes este fin de semana", source: "Primera Hora", image: "https://picsum.photos/id/201/1200/800", views: 12400, created_at: new Date(Date.now() - 47 * 60 * 1000).toISOString() },
-  { id: "3", title: "Puerto Rico avanza a semifinales en la Serie del Caribe", source: "Metro Puerto Rico", image: "https://picsum.photos/id/870/1200/800", views: 23100, created_at: new Date(Date.now() - 2 * 60 * 60 * 1000).toISOString() },
-];
+import React, { createContext, useContext, useState, useEffect, ReactNode } from "react";
 
-function relativeTime(iso: string | undefined): string {
-  if (!iso) return "";
-  const diffMs = Date.now() - new Date(iso).getTime();
-  const mins = Math.floor(diffMs / 60000);
-  if (mins < 60) return `hace ${mins} min`;
-  const hours = Math.floor(mins / 60);
-  if (hours < 24) return `hace ${hours}h`;
-  return `hace ${Math.floor(hours / 24)}d`;
+interface NewsItem {
+  id: string;
+  title: string;
+  excerpt: string;
+  image?: string;
+  source: string;
+  time: string;
+  url?: string;
+  likes: number;
+  dislikes: number;
+  userVote: "up" | "down" | null;
+  reactions: Record<string, number>;
+  comments: number;
 }
 
-export default function NewsFeed() {
-  const [articles, setArticles] = useState<NewsArticle[]>(SEED_ARTICLES);
-  const [selectedArticle, setSelectedArticle] = useState<NewsArticle | null>(null);
+interface NewsContextType {
+  news: NewsItem[];
+  loading: boolean;
+  loadingMore: boolean;
+  error: string | null;
+  hasMore: boolean;
+  updateNews: (id: string, updater: (item: NewsItem) => NewsItem) => void;
+  refreshNews: () => Promise<void>;
+  loadMoreNews: () => Promise<void>;
+}
+
+const NewsContext = createContext<NewsContextType | undefined>(undefined);
+
+export function NewsProvider({ children }: { children: ReactNode }) {
+  const [news, setNews] = useState<NewsItem[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [loadingMore, setLoadingMore] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+  const [nextPage, setNextPage] = useState<string | null>(null);
+  const [hasMore, setHasMore] = useState(true);
+
+  const API_KEY = process.env.NEXT_PUBLIC_NEWSDATA_API_KEY;
+  const BASE_URL = `https://newsdata.io/api/1/news?apikey=${API_KEY}&country=pr&size=10`;
+
+  // Moved up and typed properly
+  const getFallbackNews = (): NewsItem[] => [
+    {
+      id: "fallback-1",
+      title: "Lluvias intensas continúan afectando varias zonas de Puerto Rico",
+      excerpt: "El Servicio Nacional de Meteorología mantiene vigilancia por condiciones inestables esta semana.",
+      image: "https://picsum.photos/id/1015/600/400",
+      source: "El Nuevo Día",
+      time: "hace 1h",
+      likes: 124,
+      dislikes: 12,
+      userVote: null,
+      reactions: { "🌧️": 34 },
+      comments: 42,
+    },
+    {
+      id: "fallback-2",
+      title: "Bad Bunny anuncia nueva gira que incluye varias fechas en Puerto Rico",
+      excerpt: "El conejo malo regresa a la isla con shows especiales este verano.",
+      image: "https://picsum.photos/id/870/600/400",
+      source: "Primera Hora",
+      time: "hace 3h",
+      likes: 289,
+      dislikes: 18,
+      userVote: null,
+      reactions: { "🔥": 67 },
+      comments: 81,
+    },
+  ];
+
+  const fetchNews = async (url: string, isLoadMore = false) => {
+    try {
+      const res = await fetch(url, { next: { revalidate: 1800 } });
+
+      if (!res.ok) {
+        const errorText = await res.text().catch(() => "");
+        console.warn(`NewsData.io ${res.status}:`, errorText);
+        // Graceful fallback
+        if (!isLoadMore) {
+          setNews(getFallbackNews());
+        }
+        setHasMore(false);
+        return;
+      }
+
+      const data = await res.json();
+
+      const formatted: NewsItem[] = (data.results || []).map((article: any, index: number) => ({
+        id: article.article_id || `news-${Date.now()}-${index}`,
+        title: article.title || "Noticia de Puerto Rico",
+        excerpt: article.description || (article.content ? article.content.slice(0, 160) + "..." : "Lee más en la fuente..."),
+        image: article.image_url || undefined,
+        source: article.source_name || "Noticias PR",
+        time: article.pubDate 
+          ? new Intl.DateTimeFormat("es-PR", { month: "short", day: "numeric", hour: "numeric" }).format(new Date(article.pubDate))
+          : "Reciente",
+        url: article.link,
+        likes: Math.floor(Math.random() * 140) + 25,
+        dislikes: Math.floor(Math.random() * 25),
+        userVote: null,
+        reactions: {},
+        comments: Math.floor(Math.random() * 45) + 6,
+      }));
+
+      if (isLoadMore) {
+        setNews((prev) => [...prev, ...formatted]);
+      } else {
+        setNews(formatted.length > 0 ? formatted : getFallbackNews());
+      }
+
+      setNextPage(data.nextPage || null);
+      setHasMore(!!data.nextPage && formatted.length > 0);
+      setError(null);
+    } catch (err: any) {
+      console.error("News fetch error:", err);
+      setError("No se pudieron cargar noticias reales. Mostrando ejemplos.");
+      if (!isLoadMore) setNews(getFallbackNews());
+      setHasMore(false);
+    }
+  };
+
+  const refreshNews = async () => {
+    setLoading(true);
+    setNextPage(null);
+    setHasMore(true);
+    await fetchNews(BASE_URL);
+    setLoading(false);
+  };
+
+  const loadMoreNews = async () => {
+    if (!nextPage || loadingMore) return;
+    setLoadingMore(true);
+    const nextUrl = `${BASE_URL}&page=${nextPage}`;
+    await fetchNews(nextUrl, true);
+    setLoadingMore(false);
+  };
 
   useEffect(() => {
-    getNewsArticles().then((data) => {
-      if (data.length > 0) setArticles(data);
-    });
+    refreshNews();
   }, []);
 
-  const sorted = [...articles].sort((a, b) => b.views - a.views);
+  const updateNews = (id: string, updater: (item: NewsItem) => NewsItem) => {
+    setNews((prev) => prev.map((item) => (item.id === id ? updater(item) : item)));
+  };
 
   return (
-    <div className="max-w-3xl mx-auto">
-      <h1 className="text-4xl font-bold mb-8 flex items-center gap-3">
-        Noticias de Puerto Rico <span className="text-emerald-400 text-xl">🔥 Trending PR</span>
-      </h1>
-
-      <div className="space-y-8">
-        {sorted.map((article) => (
-          <motion.div
-            key={article.id}
-            whileHover={{ scale: 1.02 }}
-            onClick={() => setSelectedArticle(article)}
-            className="bg-white dark:bg-zinc-800 rounded-3xl overflow-hidden shadow-xl cursor-pointer"
-          >
-            <img src={article.image} className="w-full h-56 object-cover" alt="" />
-            <div className="p-6">
-              <div className="flex justify-between text-xs text-emerald-500 mb-3">
-                <span>{article.source}</span>
-                <span>{relativeTime(article.created_at)}</span>
-              </div>
-              <h3 className="text-2xl font-semibold leading-tight mb-4">{article.title}</h3>
-              <div className="text-xs text-zinc-400">+{article.views.toLocaleString()} viendo ahora</div>
-            </div>
-          </motion.div>
-        ))}
-      </div>
-
-      <NewsDetailModal
-        article={selectedArticle}
-        isOpen={!!selectedArticle}
-        onClose={() => setSelectedArticle(null)}
-      />
-    </div>
+    <NewsContext.Provider value={{
+      news,
+      loading,
+      loadingMore,
+      error,
+      hasMore,
+      updateNews,
+      refreshNews,
+      loadMoreNews,
+    }}>
+      {children}
+    </NewsContext.Provider>
   );
 }
+
+export const useNews = () => {
+  const context = useContext(NewsContext);
+  if (!context) throw new Error("useNews must be used within NewsProvider");
+  return context;
+};
