@@ -1,7 +1,7 @@
 "use client";
 
 import { useState } from "react";
-import { MapPin, Star, Map } from "lucide-react";   // ← Added Map import
+import { MapPin, Star, Map } from "lucide-react";
 
 type Spot = {
   id: string;
