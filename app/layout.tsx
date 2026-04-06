@@ -1,26 +1,18 @@
 // app/layout.tsx
 import type { Metadata } from "next";
-import { Geist, Geist_Mono } from "next/font/google";
+import { Inter } from "next/font/google";
 import "./globals.css";
-import { Toaster } from "sonner";
-import { GamificationProvider } from "@/lib/gamificationContext";
-import { NewsProvider } from "@/lib/newsContext";
 import GlobalHeader from "@/components/GlobalHeader";
 import BottomNav from "@/components/BottomNav";
+import { GamificationProvider } from "@/lib/gamificationContext";
+import { ThemeProvider } from "@/lib/themeContext";
+import { Toaster } from "sonner";
 
-const geistSans = Geist({
-  variable: "--font-geist-sans",
-  subsets: ["latin"],
-});
-
-const geistMono = Geist_Mono({
-  variable: "--font-geist-mono",
-  subsets: ["latin"],
-});
+const inter = Inter({ subsets: ["latin"] });
 
 export const metadata: Metadata = {
-  title: "ElHub - Puerto Rico",
-  description: "Lo que pasa en Puerto Rico",
+  title: "Boricua Spots",
+  description: "La app boricua pa' descubrir spots, reels y comunidad 🔥",
 };
 
 export default function RootLayout({
@@ -29,18 +21,18 @@ export default function RootLayout({
   children: React.ReactNode;
 }) {
   return (
-    <html lang="es" className="dark">
-      <body className={`${geistSans.variable} ${geistMono.variable} bg-dark-bg text-white`}>
-        <GamificationProvider>
-          <NewsProvider>
+    <html lang="es">
+      <body className={`${inter.className} bg-zinc-950 text-white min-h-screen`}>
+        <ThemeProvider>
+          <GamificationProvider>
             <GlobalHeader />
-            <main className="pb-20">
+            <main className="pb-20 min-h-[calc(100vh-64px)]">
               {children}
             </main>
             <BottomNav />
-            <Toaster position="top-center" richColors closeButton />
-          </NewsProvider>
-        </GamificationProvider>
+            <Toaster position="top-center" richColors />
+          </GamificationProvider>
+        </ThemeProvider>
       </body>
     </html>
   );

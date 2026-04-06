@@ -1,3 +1,4 @@
+/* app/globals.css */
 @import "tailwindcss";
 
 :root {
@@ -43,4 +44,23 @@ html {
 button:focus-visible {
   outline: 2px solid #e63939;
   outline-offset: 2px;
+}
+
+/* ==================== REELS PAGE SPECIFIC ==================== */
+
+/* Hide GlobalHeader on Reels only */
+body.reels-mode .sticky.top-0 {
+  display: none !important;
+}
+
+/* Make sure Reels page takes full height without header interference */
+.reels-page {
+  height: 100dvh;
+  overflow: hidden;
+}
+
+/* Extra safety for full-screen reels */
+body:has(.reels-page) {
+  padding-top: 0 !important;
+  margin-top: 0 !important;
 }

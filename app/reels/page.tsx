@@ -1,7 +1,8 @@
+// app/reels/page.tsx
 "use client";
-import { useState, useRef } from "react";
+
+import { useState, useRef, useEffect } from "react";
 import { Heart, MessageCircle, Share2 } from "lucide-react";
-import BottomNav from "@/components/BottomNav";
 import { toast } from "sonner";
 
 export default function ReelsPage() {
@@ -29,7 +30,11 @@ export default function ReelsPage() {
   const [currentIndex, setCurrentIndex] = useState(0);
   const containerRef = useRef<HTMLDivElement>(null);
 
-  const currentReel = reels[currentIndex];
+  // Optional: Hide GlobalHeader only on Reels if needed
+  useEffect(() => {
+    document.body.classList.add('reels-mode');
+    return () => document.body.classList.remove('reels-mode');
+  }, []);
 
   const toggleLikeReel = () => {
     setReels(prev =>
@@ -46,10 +51,12 @@ export default function ReelsPage() {
     toast.success(currentReel.liked ? "Like removido" : "❤️ Like");
   };
 
+  const currentReel = reels[currentIndex];
+
   return (
-    <div className="h-[100dvh] bg-black flex flex-col overflow-hidden">
-      
-      {/* Reels Container */}
+    <div className="h-screen bg-black overflow-hidden flex flex-col reels-page">
+
+      {/* Full-screen Reels Container */}
       <div
         ref={containerRef}
         className="flex-1 overflow-y-auto snap-y snap-mandatory scrollbar-hide"
@@ -66,20 +73,18 @@ export default function ReelsPage() {
         {reels.map((reel) => (
           <div
             key={reel.id}
-            className="h-[100dvh] w-full snap-start relative flex-shrink-0"
+            className="h-screen w-full snap-start relative flex-shrink-0"
           >
-            {/* Image */}
             <img
               src={reel.image}
               alt="reel"
               className="absolute inset-0 w-full h-full object-cover"
             />
 
-            {/* Gradient */}
             <div className="absolute inset-0 bg-gradient-to-b from-black/30 via-transparent to-black/80" />
 
-            {/* Bottom Content */}
-            <div className="absolute bottom-[calc(env(safe-area-inset-bottom)+90px)] left-4 right-4 text-white z-10">
+            {/* Bottom Caption */}
+            <div className="absolute bottom-24 left-4 right-4 text-white z-10">
               <div className="flex items-center gap-3 mb-3">
                 <div className="w-10 h-10 bg-zinc-700 rounded-full" />
                 <div className="font-semibold text-base">{reel.username}</div>
@@ -90,10 +95,13 @@ export default function ReelsPage() {
             </div>
 
             {/* Right Actions */}
-            <div className="absolute bottom-[calc(env(safe-area-inset-bottom)+90px)] right-4 flex flex-col items-center gap-6 z-20">
-              <button onClick={toggleLikeReel} className="flex flex-col items-center">
+            <div className="absolute bottom-24 right-4 flex flex-col items-center gap-6 z-20">
+              <button 
+                onClick={toggleLikeReel} 
+                className="flex flex-col items-center"
+              >
                 <Heart
-                  className={`w-10 h-10 ${
+                  className={`w-10 h-10 transition-all ${
                     reel.liked ? "fill-red-500 text-red-500" : "text-white"
                   }`}
                 />
@@ -113,7 +121,7 @@ export default function ReelsPage() {
         ))}
       </div>
 
-      <BottomNav />
+      {/* BottomNav will be rendered from layout.tsx */}
     </div>
   );
 }

@@ -1,5 +1,6 @@
 // app/comunidad/temas/page.tsx
 "use client";
+
 import { useState, useMemo } from "react";
 import { ArrowUp, ArrowDown, MessageCircle, ChevronDown } from "lucide-react";
 import { useGamification } from "@/lib/gamificationContext";
@@ -15,6 +16,8 @@ export default function TemasPage() {
   
   const [activeFilter, setActiveFilter] = useState<"Todos" | "Política" | "Comida" | "Música" | "Deportes" | "Isla" | "Otros" | "Fiestas" | "Transporte" | "Tecnología" | "Cultura">("Todos");
   const [showFilters, setShowFilters] = useState(false);
+  
+  // ✅ Fixed: Missing state was causing the error
   const [showNewTopicModal, setShowNewTopicModal] = useState(false);
 
   const [topics, setTopics] = useState([
@@ -119,7 +122,7 @@ export default function TemasPage() {
 
     setTopics(prev => [topicToAdd, ...prev]);
     setNewTopic({ title: "", category: "Otros" });
-    setShowNewTopicModal(false);
+    setShowNewTopicModal(false);   // ← Now works
 
     addPoints(10, "Nuevo tema creado");
     toast.success("¡Tema creado! +10 pts");
@@ -129,30 +132,39 @@ export default function TemasPage() {
 
   return (
     <div className="min-h-screen bg-dark-bg pb-20 relative">
-      {/* Sticky Filter Bar */}
-      <div className="sticky top-[114px] bg-zinc-950 border-b border-zinc-800 z-40">
-        <div className="max-w-md mx-auto px-4 py-3 flex items-center gap-3">
+      {/* Fixed Header + Small Filter Button */}
+      <div className="sticky top-[57px] bg-zinc-950 border-b border-zinc-800 z-50">
+        <div className="max-w-md mx-auto px-4 py-3 flex items-center justify-between">
+          <div className="font-semibold text-lg text-white">Comunidad</div>
+          
+          {/* Small & Compact Filter Button */}
           <button
             onClick={() => setShowFilters(!showFilters)}
-            className="flex-1 flex items-center justify-between bg-zinc-900 hover:bg-zinc-800 transition-all rounded-2xl px-4 py-2.5 text-sm border border-zinc-800"
+            className="flex items-center gap-1.5 bg-zinc-900 hover:bg-zinc-800 px-3 py-1.5 rounded-xl text-sm border border-zinc-700 transition-all active:scale-95"
           >
-            <div className="flex items-center gap-2 text-sm">
-              <span className="text-zinc-400">Filtrar por</span>
-              <span className="font-semibold text-pr-red">{activeFilter}</span>
-            </div>
+            <span className="text-zinc-400 text-xs">Filtrar:</span>
+            <span className="font-medium text-pr-red">{activeFilter}</span>
             <ChevronDown className={`w-4 h-4 transition-transform ${showFilters ? "rotate-180" : ""}`} />
           </button>
         </div>
+      </div>
 
-        {showFilters && (
-          <div className="max-w-md mx-auto px-4 pb-3">
-            <div className="bg-zinc-900 rounded-2xl border border-zinc-700 shadow-2xl py-1 overflow-hidden max-h-[320px] overflow-y-auto">
+      {/* Compact Fixed Filter Dropdown */}
+      {showFilters && (
+        <div className="sticky top-[106px] bg-zinc-950 z-40 border-b border-zinc-800">
+          <div className="max-w-md mx-auto px-4 py-2">
+            <div className="bg-zinc-900 rounded-2xl border border-zinc-700 p-1.5 max-h-[260px] overflow-y-auto">
               {categories.map((cat) => (
                 <button
                   key={cat}
-                  onClick={() => { setActiveFilter(cat); setShowFilters(false); }}
-                  className={`w-full text-left px-5 py-3 text-sm hover:bg-zinc-800 transition-all flex justify-between items-center ${
-                    activeFilter === cat ? "text-pr-red font-medium bg-zinc-800/50" : "text-zinc-300"
+                  onClick={() => {
+                    setActiveFilter(cat);
+                    setShowFilters(false);
+                  }}
+                  className={`w-full text-left px-4 py-3 text-sm hover:bg-zinc-800 rounded-xl flex justify-between items-center transition-all ${
+                    activeFilter === cat 
+                      ? "text-pr-red font-medium bg-zinc-800" 
+                      : "text-zinc-300"
                   }`}
                 >
                   {cat}
@@ -161,8 +173,8 @@ export default function TemasPage() {
               ))}
             </div>
           </div>
-        )}
-      </div>
+        </div>
+      )}
 
       {/* Topics List */}
       <div className="max-w-md mx-auto px-4 py-6 space-y-4">
@@ -219,7 +231,7 @@ export default function TemasPage() {
         ))}
       </div>
 
-      {/* Unified Floating Action Button */}
+      {/* New Topic FAB */}
       <UnifiedFAB onClick={() => setShowNewTopicModal(true)} />
 
       {/* New Topic Modal */}

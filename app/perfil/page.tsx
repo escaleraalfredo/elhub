@@ -1,13 +1,16 @@
+// app/perfil/page.tsx
 "use client";
 
 import { useState, useEffect } from "react";
-import { Award, Flame, Trophy, Calendar } from "lucide-react";
+import { Award, Flame, Trophy, Calendar, Settings } from "lucide-react";
 import { useGamification } from "@/lib/gamificationContext";
 import BottomNav from "@/components/BottomNav";
 import { toast } from "sonner";
+import { useRouter } from "next/navigation";
 
 export default function PerfilPage() {
   const { points, level, streak, addPoints } = useGamification();
+  const router = useRouter();
   
   const [hasClaimedDaily, setHasClaimedDaily] = useState(false);
 
@@ -60,16 +63,26 @@ export default function PerfilPage() {
       <div className="max-w-md mx-auto">
         {/* Profile Card */}
         <div className="px-5 pt-6 pb-8 bg-zinc-900 border-b border-zinc-800">
-          <div className="flex items-center gap-5">
-            <div className="w-20 h-20 bg-gradient-to-br from-pr-red to-orange-500 rounded-3xl flex items-center justify-center text-5xl shadow-xl">👤</div>
-            <div className="flex-1">
-              <h2 className="text-2xl font-bold text-white">@tuusuario</h2>
-              <p className="text-zinc-400">Nivel {level} • Boricua en la diáspora</p>
-              <div className="flex items-center gap-2 mt-1">
-                <Flame className="w-5 h-5 text-orange-500" />
-                <span className="text-orange-500 font-medium">{streak} días de racha</span>
+          <div className="flex items-center justify-between">
+            <div className="flex items-center gap-5">
+              <div className="w-20 h-20 bg-gradient-to-br from-pr-red to-orange-500 rounded-3xl flex items-center justify-center text-5xl shadow-xl">👤</div>
+              <div>
+                <h2 className="text-2xl font-bold text-white">@tuusuario</h2>
+                <p className="text-zinc-400">Nivel {level} • Boricua en la diáspora</p>
+                <div className="flex items-center gap-2 mt-1">
+                  <Flame className="w-5 h-5 text-orange-500" />
+                  <span className="text-orange-500 font-medium">{streak} días de racha</span>
+                </div>
               </div>
             </div>
+
+            {/* Settings Icon - ONLY here now */}
+            <button
+              onClick={() => router.push("/settings")}
+              className="p-3 text-zinc-400 hover:text-white transition-colors"
+            >
+              <Settings className="w-6 h-6" />
+            </button>
           </div>
 
           {/* Daily Bonus */}
@@ -105,7 +118,7 @@ export default function PerfilPage() {
           </div>
         </div>
 
-        {/* Badges - Two Rows with Hidden Scrollbars */}
+        {/* Badges */}
         <div className="px-5 py-6">
           <div className="flex justify-between mb-4">
             <h3 className="font-semibold flex items-center gap-2">
