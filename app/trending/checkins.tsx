@@ -4,7 +4,7 @@ import { Trophy, Users } from "lucide-react";
 
 export default function Checkins() {
   return (
-    <div className="min-h-[70vh] flex flex-col items-center justify-center text-center px-6">
+    <div className="py-10 flex flex-col items-center justify-center text-center px-6">
       <div className="mb-8">
         <div className="w-24 h-24 mx-auto bg-zinc-900 rounded-3xl flex items-center justify-center border border-zinc-700">
           <Users className="w-12 h-12 text-pr-red" />
@@ -13,11 +13,11 @@ export default function Checkins() {
 
       <Trophy className="w-16 h-16 text-amber-400 mb-6" />
 
-      <h2 className="text-3xl font-bold text-white mb-3">
+      <h2 className="text-2xl font-bold text-white mb-3">
         Check-ins en vivo
       </h2>
 
-      <p className="text-zinc-400 text-lg max-w-[280px] mx-auto leading-relaxed">
+      <p className="text-zinc-400 max-w-[280px] mx-auto leading-relaxed">
         Pronto verás quién está en los mejores spots de Puerto Rico en tiempo real.
       </p>
 

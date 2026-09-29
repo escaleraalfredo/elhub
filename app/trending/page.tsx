@@ -1,114 +1,56 @@
+// app/trending/page.tsx
 "use client";
 
 import { useState } from "react";
-import { Flame, Map, ChevronDown } from "lucide-react";
-
+import { Map } from "lucide-react";
+import { Chips, PageContent, PageShell, StickyBar, Tabs } from "@/components/ui/Page";
 import Spots from "./spots";
 import Checkins from "./checkins";
-import SportsFeed from "./sportsfeed";
+
+const CATEGORIES = ["Todos", "Restaurantes", "Comida Rápida", "Bares", "Lounges", "Cigar Lounges", "Cafés", "Lechoneras"] as const;
+type Category = (typeof CATEGORIES)[number];
 
 export default function TrendingPage() {
-  const [activeSubTab, setActiveSubTab] = useState<"spots" | "checkins" | "sports">("spots");
-  const [activeCategory, setActiveCategory] = useState<string>("Todos");
-  const [showFilters, setShowFilters] = useState(false);
-  const [activeFilter, setActiveFilter] = useState<string>("Más altos");
+  const [tab, setTab] = useState<"spots" | "checkins">("spots");
+  const [category, setCategory] = useState<Category>("Todos");
   const [viewMode, setViewMode] = useState<"list" | "map">("list");
-  const [showRatingModal, setShowRatingModal] = useState<string | null>(null);
 
   return (
-    <div className="min-h-screen bg-[#09090b] pb-20">
+    <PageShell>
+      <StickyBar>
+        <Tabs
+          active={tab}
+          onChange={(v) => setTab(v as "spots" | "checkins")}
+          tabs={[
+            { label: "Spots", value: "spots" },
+            { label: "Check-ins", value: "checkins" },
+          ]}
+        />
+      </StickyBar>
 
-      {/* Sticky Header */}
-      <div className="sticky top-[57px] bg-zinc-950 border-b border-zinc-800 z-40">
-        <div className="max-w-md mx-auto px-4 py-3">
-
-          {/* Tabs: Spots | Check-ins | Sports */}
-          <div className="flex border-b border-zinc-800">
+      {tab === "spots" && (
+        <div className="max-w-md mx-auto">
+          <div className="flex items-center justify-between px-4 pt-4">
+            <h1 className="text-lg font-bold">Rankings 🇵🇷</h1>
             <button
-              onClick={() => setActiveSubTab("spots")}
-              className={`flex-1 py-3 font-medium transition-colors ${
-                activeSubTab === "spots" ? "text-white border-b-2 border-pr-red" : "text-zinc-400 hover:text-zinc-200"
-              }`}
+              onClick={() => setViewMode(viewMode === "list" ? "map" : "list")}
+              className="flex items-center gap-2 bg-zinc-900 hover:bg-zinc-800 px-3.5 py-1.5 rounded-full text-sm font-medium border border-zinc-800"
             >
-              Spots
-            </button>
-            <button
-              onClick={() => setActiveSubTab("checkins")}
-              className={`flex-1 py-3 font-medium transition-colors ${
-                activeSubTab === "checkins" ? "text-white border-b-2 border-pr-red" : "text-zinc-400 hover:text-zinc-200"
-              }`}
-            >
-              Check-ins
-            </button>
-            <button
-              onClick={() => setActiveSubTab("sports")}
-              className={`flex-1 py-3 font-medium transition-colors ${
-                activeSubTab === "sports" ? "text-white border-b-2 border-pr-red" : "text-zinc-400 hover:text-zinc-200"
-              }`}
-            >
-              Sports
+              <Map className="w-4 h-4" />
+              {viewMode === "list" ? "Ver mapa" : "Ver lista"}
             </button>
           </div>
-
-          {/* Extra UI only for Spots tab */}
-          {activeSubTab === "spots" && (
-            <>
-              <div className="flex items-center justify-between mt-4">
-                <div className="flex items-center gap-2">
-                  <Flame className="w-6 h-6 text-pr-red" />
-                  <h1 className="text-white text-xl font-bold">Rankings 🇵🇷</h1>
-                </div>
-
-                <button
-                  onClick={() => setViewMode(viewMode === "list" ? "map" : "list")}
-                  className="flex items-center gap-2 bg-zinc-900 hover:bg-zinc-800 px-4 py-2 rounded-2xl text-sm font-medium border border-zinc-700"
-                >
-                  <Map className="w-4 h-4" />
-                  {viewMode === "list" ? "Ver Mapa" : "Ver Lista"}
-                </button>
-              </div>
-
-              <div className="flex gap-2 mt-4 overflow-x-auto pb-2 scrollbar-hide">
-                {["Todos", "Restaurantes", "Comida Rápida", "Bares", "Lounges", "Cigar Lounges", "Cafés", "Lechoneras"].map((cat) => (
-                  <button
-                    key={cat}
-                    onClick={() => setActiveCategory(cat)}
-                    className={`flex items-center gap-2 px-5 py-2.5 rounded-3xl text-sm font-medium whitespace-nowrap transition-all ${
-                      activeCategory === cat ? "bg-pr-red text-white" : "bg-zinc-900 text-zinc-300 hover:bg-zinc-800"
-                    }`}
-                  >
-                    {cat}
-                  </button>
-                ))}
-              </div>
-
-              <div className="flex items-center justify-end mt-3 pr-1">
-                <button
-                  onClick={() => setShowFilters(!showFilters)}
-                  className="flex items-center gap-1.5 text-zinc-400 hover:text-white transition-colors text-sm"
-                >
-                  <span className="font-medium">{activeFilter}</span>
-                  <ChevronDown className={`w-4 h-4 transition-transform ${showFilters ? "rotate-180" : ""}`} />
-                </button>
-              </div>
-            </>
-          )}
+          <Chips options={CATEGORIES} active={category} onChange={setCategory} className="pb-0" />
         </div>
-      </div>
+      )}
 
-      {/* Content Area */}
-      <div className="max-w-md mx-auto px-4 py-6">
-        {activeSubTab === "spots" && (
-          <Spots 
-            activeCategory={activeCategory} 
-            viewMode={viewMode} 
-            setShowRatingModal={setShowRatingModal} 
-          />
+      <PageContent>
+        {tab === "spots" ? (
+          <Spots activeCategory={category} viewMode={viewMode} setShowRatingModal={() => {}} />
+        ) : (
+          <Checkins />
         )}
-        {activeSubTab === "checkins" && <Checkins />}
-        {activeSubTab === "sports" && <SportsFeed />}
-      </div>
-
-    </div>
+      </PageContent>
+    </PageShell>
   );
 }

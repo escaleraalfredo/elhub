@@ -2,41 +2,41 @@
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { Home, TrendingUp, Play, Users, User } from "lucide-react";
+import { Newspaper, Play, Trophy, TrendingUp, User, Users } from "lucide-react";
+import { cn } from "@/lib/utils";
+
+const TABS = [
+  { href: "/noticias", label: "Noticias", icon: Newspaper },
+  { href: "/comunidad", label: "Comunidad", icon: Users },
+  { href: "/deportes", label: "Deportes", icon: Trophy },
+  { href: "/reels", label: "Reels", icon: Play },
+  { href: "/trending", label: "Trending", icon: TrendingUp },
+  { href: "/perfil", label: "Perfil", icon: User },
+];
 
 export default function BottomNav() {
   const pathname = usePathname();
 
-  const tabs = [
-    { href: "/comunidad", label: "Comunidad", icon: Users },
-    { href: "/noticias", label: "Noticias", icon: Home },
-    { href: "/reels", label: "Reels", icon: Play },
-    { href: "/trending", label: "Trending", icon: TrendingUp },
-    { href: "/perfil", label: "Perfil", icon: User },
-  ];
-
   return (
-    <div className="fixed bottom-0 left-0 right-0 bg-zinc-950 border-t border-zinc-800 z-50">
-      <div className="max-w-md mx-auto">
-        <div className="flex items-center justify-around py-2">
-          {tabs.map((tab) => {
-            const Icon = tab.icon;
-            const isActive = pathname === tab.href;
-            return (
-              <Link
-                key={tab.href}
-                href={tab.href}
-                className={`flex flex-col items-center gap-1 transition-colors ${
-                  isActive ? "text-pr-red" : "text-zinc-400 hover:text-white"
-                }`}
-              >
-                <Icon className="w-6 h-6" />
-                <span className="text-xs font-medium">{tab.label}</span>
-              </Link>
-            );
-          })}
-        </div>
+    <nav className="fixed bottom-0 inset-x-0 z-50 bg-zinc-950/95 backdrop-blur border-t border-zinc-800 pb-[env(safe-area-inset-bottom)]">
+      <div className="max-w-md mx-auto h-16 grid grid-cols-6">
+        {TABS.map(({ href, label, icon: Icon }) => {
+          const active = pathname === href || pathname.startsWith(`${href}/`);
+          return (
+            <Link
+              key={href}
+              href={href}
+              className={cn(
+                "flex flex-col items-center justify-center gap-1 transition-colors",
+                active ? "text-pr-red" : "text-zinc-500 hover:text-white"
+              )}
+            >
+              <Icon className="w-[22px] h-[22px]" strokeWidth={active ? 2.4 : 2} />
+              <span className="text-[10px] font-semibold">{label}</span>
+            </Link>
+          );
+        })}
       </div>
-    </div>
+    </nav>
   );
 }

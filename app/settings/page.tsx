@@ -1,14 +1,11 @@
 "use client";
 
-import { useRouter } from "next/navigation";
-import { ChevronLeft, User, Bell, Shield, Palette, Moon, Sun, Volume2, Eye, LogOut, Globe } from "lucide-react";
-import BottomNav from "@/components/BottomNav";
+import { User, Bell, Shield, Palette, Moon, Sun, Volume2, Eye, LogOut, Globe } from "lucide-react";
 import { useState, useEffect } from "react";
 import { toast } from "sonner";
+import { PageContent, PageHeader, PageShell } from "@/components/ui/Page";
 
 export default function SettingsPage() {
-  const router = useRouter();
-
   const [isDarkMode, setIsDarkMode] = useState(true);
   const [notificationsEnabled, setNotificationsEnabled] = useState(true);
   const [soundEnabled, setSoundEnabled] = useState(true);
@@ -48,23 +45,12 @@ export default function SettingsPage() {
   };
 
   return (
-    <div className="min-h-screen bg-dark-bg pb-20">
-      {/* Header */}
-      <div className="sticky top-0 bg-zinc-950 border-b border-zinc-800 z-40">
-        <div className="max-w-md mx-auto px-4 py-4 flex items-center gap-4">
-          <button 
-            onClick={() => router.back()} 
-            className="text-zinc-400 hover:text-white"
-          >
-            <ChevronLeft className="w-7 h-7" />
-          </button>
-          <h1 className="text-xl font-bold text-white">Configuración</h1>
-        </div>
-      </div>
+    <PageShell>
+      <PageHeader title="Configuración" back />
 
-      <div className="max-w-md mx-auto px-4 py-6 space-y-6">
+      <PageContent>
         {/* Account Section */}
-        <div className="bg-zinc-900 rounded-3xl overflow-hidden">
+        <div className="bg-zinc-900 rounded-3xl border border-zinc-800 overflow-hidden">
           <div className="p-6 border-b border-zinc-800">
             <div className="flex items-center gap-4">
               <div className="w-16 h-16 bg-zinc-700 rounded-2xl" />
@@ -89,7 +75,7 @@ export default function SettingsPage() {
         </div>
 
         {/* Appearance */}
-        <div className="bg-zinc-900 rounded-3xl overflow-hidden">
+        <div className="bg-zinc-900 rounded-3xl border border-zinc-800 overflow-hidden">
           <div className="p-6">
             <div className="flex items-center gap-4 mb-6">
               <Palette className="w-5 h-5 text-zinc-400" />
@@ -99,7 +85,7 @@ export default function SettingsPage() {
             {/* Dark / Light Mode Toggle - Beautiful Version */}
             <button 
               onClick={toggleTheme}
-              className="w-full flex items-center justify-between py-5 px-5 hover:bg-zinc-800 transition-all rounded-2xl group"
+              className="w-full flex items-center justify-between py-4 px-2 hover:bg-zinc-800 transition-all rounded-2xl group text-left"
             >
               <div className="flex items-center gap-4">
                 <div className="w-10 h-10 bg-zinc-800 rounded-2xl flex items-center justify-center">
@@ -132,7 +118,7 @@ export default function SettingsPage() {
         </div>
 
         {/* Language Selector */}
-        <div className="bg-zinc-900 rounded-3xl overflow-hidden">
+        <div className="bg-zinc-900 rounded-3xl border border-zinc-800 overflow-hidden">
           <div className="p-6">
             <div className="flex items-center gap-4 mb-6">
               <Globe className="w-5 h-5 text-zinc-400" />
@@ -157,7 +143,7 @@ export default function SettingsPage() {
         </div>
 
         {/* Other Settings */}
-        <div className="bg-zinc-900 rounded-3xl overflow-hidden">
+        <div className="bg-zinc-900 rounded-3xl border border-zinc-800 overflow-hidden">
           <div className="p-6 space-y-2">
             <button className="w-full flex items-center gap-4 py-4 hover:bg-zinc-800 transition-all rounded-2xl px-4 text-left">
               <Bell className="w-5 h-5 text-zinc-400" />
@@ -193,14 +179,12 @@ export default function SettingsPage() {
         {/* Logout */}
         <button 
           onClick={() => toast.info("Cierre de sesión se conectará con Supabase más tarde")}
-          className="w-full bg-zinc-900 hover:bg-red-950/50 transition-all py-4 rounded-3xl text-red-500 font-medium flex items-center justify-center gap-2"
+          className="w-full bg-zinc-900 border border-zinc-800 hover:bg-red-950/50 transition-all py-4 rounded-3xl text-red-500 font-medium flex items-center justify-center gap-2"
         >
           <LogOut className="w-5 h-5" />
           Cerrar sesión
         </button>
-      </div>
-
-      <BottomNav />
-    </div>
+      </PageContent>
+    </PageShell>
   );
 }

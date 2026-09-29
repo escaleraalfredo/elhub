@@ -15,10 +15,11 @@ const config: Config = {
           blue: "#003087",
           white: "#FFFFFF",
         },
+        // Single app-wide surface palette (matches zinc-950/900/800)
         dark: {
-          bg: "#0A0F1C",
-          card: "#121826",
-          border: "#1F2A44",
+          bg: "#09090b",
+          card: "#18181b",
+          border: "#27272a",
         },
       },
     },

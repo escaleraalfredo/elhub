@@ -1,228 +1,135 @@
+// app/noticias/social/page.tsx
 "use client";
 
-import Link from "next/link";
 import { useState } from "react";
-import { 
-  Heart, MessageCircle, Repeat2, Bookmark, Smile, ChevronDown 
-} from "lucide-react";
+import { BadgeCheck, ExternalLink, Heart, RefreshCw, Repeat2 } from "lucide-react";
+import { Card, EmptyState, Notice, PageContent, Skeleton } from "@/components/ui/Page";
+import Avatar from "@/components/ui/Avatar";
+import SafeImg from "@/components/ui/SafeImg";
+import { CommentButton, CommentsSheet } from "@/components/comments/Comments";
+import { PR_ACCOUNTS, type XPost, type XResponse } from "@/lib/x/types";
+import { useFetchJson } from "@/lib/useFetchJson";
 import { useGamification } from "@/lib/gamificationContext";
+import { formatCount, timeAgo } from "@/lib/time";
+import { cn } from "@/lib/utils";
 
-export default function NoticiasSocialPage() {
+function PostText({ text }: { text: string }) {
+  return (
+    <p className="text-[15px] leading-snug text-zinc-100 whitespace-pre-wrap break-words">
+      {text.split(/(\s+)/).map((w, i) =>
+        /^(#|@)\w+/.test(w) || /^https?:\/\//.test(w) ? (
+          <span key={i} className="text-sky-400">{w}</span>
+        ) : (
+          w
+        )
+      )}
+    </p>
+  );
+}
+
+function Post({ post, onComments }: { post: XPost; onComments: () => void }) {
   const { addPoints } = useGamification();
+  const [liked, setLiked] = useState(false);
+  return (
+    <article className="p-4 flex gap-3">
+      <Avatar name={post.author.username || post.author.name} src={post.author.avatar} size={40} />
+      <div className="flex-1 min-w-0">
+        <div className="flex items-center gap-1 text-sm min-w-0">
+          <span className="font-semibold text-white truncate">{post.author.name}</span>
+          {post.author.verified && <BadgeCheck className="w-4 h-4 text-sky-400 shrink-0" />}
+          <span className="text-zinc-500 truncate">@{post.author.username} · {timeAgo(post.createdAt)}</span>
+          <a href={post.url} target="_blank" rel="noopener noreferrer" className="ml-auto text-zinc-500 hover:text-white shrink-0" aria-label="Ver en X">
+            <ExternalLink className="w-4 h-4" />
+          </a>
+        </div>
+        <div className="mt-1">
+          <PostText text={post.text} />
+        </div>
+        <SafeImg src={post.image} alt="" className="mt-3 w-full max-h-80 object-cover rounded-2xl border border-zinc-800" />
+        <div className="flex items-center gap-8 mt-3 text-zinc-400">
+          <CommentButton threadId={`x:${post.id}`} onClick={onComments} />
+          <a
+            href={`https://x.com/intent/retweet?tweet_id=${post.id}`}
+            target="_blank"
+            rel="noopener noreferrer"
+            className="flex items-center gap-1.5 hover:text-emerald-400"
+          >
+            <Repeat2 className="w-5 h-5" />
+            <span className="text-sm tabular-nums">{formatCount(post.metrics.reposts)}</span>
+          </a>
+          <button
+            onClick={() => {
+              if (!liked) addPoints(2, "Like X");
+              setLiked(!liked);
+            }}
+            className={cn("flex items-center gap-1.5", liked ? "text-red-500" : "hover:text-red-400")}
+          >
+            <Heart className={cn("w-5 h-5", liked && "fill-current")} />
+            <span className="text-sm tabular-nums">{formatCount(post.metrics.likes + (liked ? 1 : 0))}</span>
+          </button>
+        </div>
+      </div>
+    </article>
+  );
+}
 
-  const [showFilters, setShowFilters] = useState(false);
-  const [activeFilter, setActiveFilter] = useState<string>("Todos");
-
-  // Real X posts about Puerto Rico (boricua vibe)
-  const [socialPosts, setSocialPosts] = useState([
-    {
-      id: "x2040148930973810902",
-      user: "Elfandel3023",
-      avatar: "https://pbs.twimg.com/profile_images/1945150323401605120/jozW2NdC.jpg",
-      username: "@Elfandel3023",
-      content: "Usted sabra más que yo porque usted es bori. Pero yo vi una vez un juego de Puerto Rico en YouTube por la pagina oficial de la liga y el directo llegó apenas a 1k espectadores y era como de round robin el juego. En cambio el BSN es una liga que tiene numeros de audiencias altos",
-      image: null,
-      likes: 12,
-      comments: 3,
-      reposts: 1,
-      timestamp: "hace 1m",
-      userLiked: false,
-    },
-    {
-      id: "x2040148848815865968",
-      user: "SDrizin",
-      avatar: "https://pbs.twimg.com/profile_images/1112660072591773696/MO5iGYT1.png",
-      username: "@SDrizin",
-      content: "Puerto Rico steps up to protect youthful suspects by requiring that their interrogations be recorded. Governor signs law requiring recorded interrogations of minors.",
-      image: null,
-      likes: 45,
-      comments: 8,
-      reposts: 12,
-      timestamp: "hace 2m",
-      userLiked: false,
-    },
-    {
-      id: "x2040148836920828128",
-      user: "dps6189",
-      avatar: "https://pbs.twimg.com/profile_images/1985774622915149824/MiRFSVJ-.jpg",
-      username: "@dps6189",
-      content: "Someone tell him that i hope at some point soon we give Puerto Rico independence, i have Puertorican blood and i grew up there, but it’s totally corrupt. The fraud is massive, and most people vote democrat. I say cut the island loose.",
-      image: null,
-      likes: 19,
-      comments: 14,
-      reposts: 5,
-      timestamp: "hace 3m",
-      userLiked: false,
-    },
-    {
-      id: "x2040148592019554797",
-      user: "CBS12",
-      avatar: "https://pbs.twimg.com/profile_images/963903623322247169/zuS5gTwx.jpg",
-      username: "@CBS12",
-      content: "WATER RESCUE | A rescue operation was launched after a vessel carrying federal agents capsized off the Puerto Rico coast.",
-      image: null,
-      likes: 67,
-      comments: 11,
-      reposts: 22,
-      timestamp: "hace 4m",
-      userLiked: false,
-    },
-  ]);
-
-  const filters = ["Todos", "Cerca de ti", "Siguiendo", "Trending"];
-
-  const handleLike = (id: string) => {
-    setSocialPosts(prev =>
-      prev.map(post => {
-        if (post.id === id) {
-          const newLiked = !post.userLiked;
-          if (newLiked) addPoints(3, "Social like");
-          return {
-            ...post,
-            likes: newLiked ? post.likes + 1 : Math.max(0, post.likes - 1),
-            userLiked: newLiked
-          };
-        }
-        return post;
-      })
-    );
-  };
-
-  const handleComment = (id: string) => {
-    addPoints(2, "Social comment");
-    alert("💬 Abre hilo de comentarios (X style) – coming soon");
-  };
-
-  const handleRepost = (id: string) => {
-    addPoints(5, "Social repost");
-    alert("🔁 Reposteado +5 puntos 🔥");
-  };
+export default function XFeedPage() {
+  const { data, loading, refresh } = useFetchJson<XResponse>("/api/x", 5 * 60_000);
+  const [commentsFor, setCommentsFor] = useState<string | null>(null);
 
   return (
-    <div className="min-h-screen bg-[#09090b] pb-20">
-
-      {/* Sticky Header - Minimal & Subliminal Filter */}
-      <div className="sticky top-[57px] bg-zinc-950 border-b border-zinc-800 z-40">
-        <div className="max-w-md mx-auto px-4 py-3">
-
-          {/* Tab Bar */}
-          <div className="flex border-b border-zinc-800">
-            <Link 
-              href="/noticias" 
-              className="flex-1 text-center py-3 font-medium text-zinc-400 hover:text-zinc-200 transition-colors"
-            >
-              Noticias
-            </Link>
-            <Link 
-              href="/noticias/social" 
-              className="flex-1 text-center py-3 font-medium text-white border-b-2 border-pr-red"
-            >
-              Social
-            </Link>
-          </div>
-
-          {/* Minimal Filter Row - Subliminal */}
-          <div className="flex items-center justify-end mt-3 pr-1">
-            <button
-              onClick={() => setShowFilters(!showFilters)}
-              className="flex items-center gap-1.5 text-zinc-400 hover:text-white transition-colors text-sm"
-            >
-              <span className="font-medium">{activeFilter}</span>
-              <ChevronDown className={`w-4 h-4 transition-transform ${showFilters ? "rotate-180" : ""}`} />
-            </button>
-          </div>
-        </div>
-
-        {/* Dropdown */}
-        {showFilters && (
-          <div className="max-w-md mx-auto px-4 pb-3">
-            <div className="bg-zinc-900 rounded-2xl border border-zinc-700 shadow-2xl py-1 max-h-[300px] overflow-y-auto">
-              {filters.map((f) => (
-                <button
-                  key={f}
-                  onClick={() => {
-                    setActiveFilter(f);
-                    setShowFilters(false);
-                  }}
-                  className={`w-full text-left px-5 py-3 text-sm hover:bg-zinc-800 transition-all flex justify-between items-center ${
-                    activeFilter === f
-                      ? "text-pr-red font-medium bg-zinc-800/50"
-                      : "text-zinc-300"
-                  }`}
-                >
-                  {f}
-                  {activeFilter === f && <span className="text-xs">✓</span>}
-                </button>
-              ))}
-            </div>
-          </div>
-        )}
-      </div>
-
-      {/* Content */}
-      <div className="max-w-md mx-auto px-4 py-6 space-y-6">
-        {socialPosts.map((post) => (
-          <div 
-            key={post.id} 
-            className="bg-zinc-900 border border-zinc-800 rounded-3xl overflow-hidden hover:border-zinc-700 transition-colors"
+    <>
+      <div className="max-w-md mx-auto flex gap-2 overflow-x-auto scrollbar-hide px-4 py-2.5">
+        {PR_ACCOUNTS.map((a) => (
+          <a
+            key={a.username}
+            href={`https://x.com/${a.username}`}
+            target="_blank"
+            rel="noopener noreferrer"
+            className="shrink-0 flex items-center gap-2 bg-zinc-900 border border-zinc-800 rounded-full pl-1 pr-3 py-1 text-sm text-zinc-200 hover:bg-zinc-800"
           >
-            {/* User Header */}
-            <div className="flex items-center gap-3 p-4">
-              <img 
-                src={post.avatar} 
-                alt={post.user} 
-                className="w-11 h-11 rounded-full object-cover border-2 border-zinc-700" 
-              />
-              <div className="flex-1 min-w-0">
-                <div className="font-semibold text-white text-[15px]">{post.user}</div>
-                <div className="text-zinc-500 text-sm">{post.username} · {post.timestamp}</div>
-              </div>
-            </div>
-
-            {/* Content */}
-            <div className="px-4 pb-4">
-              <p className="text-zinc-200 leading-relaxed text-[15px] whitespace-pre-wrap">
-                {post.content}
-              </p>
-            </div>
-
-            {/* Actions */}
-            <div className="border-t border-zinc-800 px-5 py-3 flex justify-between text-zinc-400">
-              <button 
-                onClick={() => handleLike(post.id)}
-                className={`flex items-center gap-1.5 transition-all ${post.userLiked ? "text-pr-red scale-105" : "hover:text-zinc-200"}`}
-              >
-                <Heart className={`w-5 h-5 ${post.userLiked ? "fill-current" : ""}`} />
-                <span className="text-sm tabular-nums">{post.likes}</span>
-              </button>
-
-              <button 
-                onClick={() => handleComment(post.id)}
-                className="flex items-center gap-1.5 hover:text-zinc-200 transition-colors"
-              >
-                <MessageCircle className="w-5 h-5" />
-                <span className="text-sm tabular-nums">{post.comments}</span>
-              </button>
-
-              <button 
-                onClick={() => handleRepost(post.id)}
-                className="flex items-center gap-1.5 hover:text-zinc-200 transition-colors"
-              >
-                <Repeat2 className="w-5 h-5" />
-                <span className="text-sm tabular-nums">{post.reposts}</span>
-              </button>
-
-              <button className="flex items-center gap-1.5 hover:text-zinc-200 transition-colors">
-                <Bookmark className="w-5 h-5" />
-              </button>
-
-              <button className="flex items-center gap-1.5 hover:text-zinc-200 transition-colors">
-                <Smile className="w-5 h-5" />
-              </button>
-            </div>
-          </div>
+            <Avatar name={a.username} size={24} />
+            {a.name}
+          </a>
         ))}
       </div>
-    </div>
+
+      <PageContent>
+        <div className="flex items-center justify-between px-1 text-xs text-zinc-500">
+          <span>Lo que se habla de Puerto Rico en X</span>
+          <button onClick={refresh} className="flex items-center gap-1 hover:text-white">
+            <RefreshCw className={cn("w-3.5 h-3.5", loading && "animate-spin")} /> Actualizar
+          </button>
+        </div>
+
+        {data?.sample && (
+          <Notice>
+            {data.reason === "missing_token"
+              ? "Posts de ejemplo. Para ver X en vivo, añade X_BEARER_TOKEN (plan de X API con búsqueda) en las variables de entorno de Vercel."
+              : "No se pudo conectar a X ahora mismo. Mostrando posts de ejemplo."}
+          </Notice>
+        )}
+
+        {loading && !data && (
+          <div className="space-y-3">
+            <Skeleton className="h-28" />
+            <Skeleton className="h-28" />
+            <Skeleton className="h-28" />
+          </div>
+        )}
+
+        {data && data.posts.length === 0 && <EmptyState icon="𝕏" title="No hay posts recientes" />}
+
+        {data && data.posts.length > 0 && (
+          <Card className="divide-y divide-zinc-800">
+            {data.posts.map((post) => (
+              <Post key={post.id} post={post} onComments={() => setCommentsFor(post.id)} />
+            ))}
+          </Card>
+        )}
+      </PageContent>
+
+      <CommentsSheet open={commentsFor !== null} onClose={() => setCommentsFor(null)} threadId={`x:${commentsFor ?? ""}`} />
+    </>
   );
 }

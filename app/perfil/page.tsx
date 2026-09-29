@@ -3,8 +3,8 @@
 import { useState, useEffect } from "react";
 import { Award, Flame, Trophy, Calendar } from "lucide-react";
 import { useGamification } from "@/lib/gamificationContext";
-import BottomNav from "@/components/BottomNav";
 import { toast } from "sonner";
+import { PageShell } from "@/components/ui/Page";
 
 export default function PerfilPage() {
   const { points, level, streak, addPoints } = useGamification();
@@ -56,7 +56,7 @@ export default function PerfilPage() {
   }, []);
 
   return (
-    <div className="min-h-screen bg-dark-bg pb-20">
+    <PageShell>
       <div className="max-w-md mx-auto">
         {/* Profile Card */}
         <div className="px-5 pt-6 pb-8 bg-zinc-900 border-b border-zinc-800">
@@ -162,8 +162,8 @@ export default function PerfilPage() {
               return (
                 <div 
                   key={index}
-                  className={`bg-zinc-900 rounded-3xl p-5 flex items-center gap-4 border transition-all ${
-                    isUser ? "border-pr-red bg-pr-red/5" : "border-transparent"
+                  className={`bg-zinc-900 rounded-3xl p-4 flex items-center gap-4 border transition-all ${
+                    isUser ? "border-pr-red bg-pr-red/5" : "border-zinc-800"
                   }`}
                 >
                   <div className={`w-11 h-11 rounded-2xl flex items-center justify-center font-bold text-2xl flex-shrink-0
@@ -202,8 +202,6 @@ export default function PerfilPage() {
           </p>
         </div>
       </div>
-
-      <BottomNav />
-    </div>
+    </PageShell>
   );
 }
