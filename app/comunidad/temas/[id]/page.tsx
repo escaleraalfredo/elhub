@@ -8,13 +8,12 @@ import { Card, EmptyState, PageContent } from "@/components/ui/Page";
 import Avatar from "@/components/ui/Avatar";
 import VoteColumn, { applyVote } from "@/components/ui/VoteColumn";
 import { CommentSection } from "@/components/comments/Comments";
-import { useGamification } from "@/lib/gamificationContext";
+import { award } from "@/lib/points";
 import { TOPICS, loadUserContent, type Topic } from "@/lib/community/data";
 
 export default function TemaDetailPage() {
   const { id } = useParams<{ id: string }>();
   const router = useRouter();
-  const { addPoints } = useGamification();
   const [topic, setTopic] = useState<Topic | null | undefined>(() => TOPICS.find((t) => String(t.id) === id));
 
   useEffect(() => {
@@ -34,7 +33,7 @@ export default function TemaDetailPage() {
 
   const vote = (dir: "up" | "down") => {
     const next = applyVote(topic.votes, topic.userVote, dir);
-    if (next.userVote) addPoints(3, "Voto tema");
+    if (next.userVote) award("vote_topic", { key: String(topic.id) });
     setTopic({ ...topic, ...next });
   };
 

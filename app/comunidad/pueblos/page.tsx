@@ -2,12 +2,11 @@
 
 import { useState } from "react";
 import { Users } from "lucide-react";
-import { useGamification } from "@/lib/gamificationContext";
+import { award } from "@/lib/points";
 import { Card, PageContent } from "@/components/ui/Page";
 import { toast } from "sonner";
 
 export default function PueblosPage() {
-  const { addPoints } = useGamification();
 
   const [pueblos, setPueblos] = useState([
     { 
@@ -49,8 +48,8 @@ export default function PueblosPage() {
       if (pueblo.id === id) {
         const newPeople = pueblo.checkedIn ? pueblo.peopleHere - 1 : pueblo.peopleHere + 1;
         if (!pueblo.checkedIn) {
-          addPoints(30, "Pueblo check-in");
-          toast.success(`¡Check-in en ${pueblo.name}! +30 pts 🔥`);
+          award("checkin_pueblo", { key: `${pueblo.id}:${new Date().toDateString()}` });
+          toast.success(`¡Check-in en ${pueblo.name}! 🔥`);
         }
         return { ...pueblo, peopleHere: newPeople, checkedIn: !pueblo.checkedIn };
       }

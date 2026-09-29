@@ -1,13 +1,17 @@
 // components/GlobalHeader.tsx
 "use client";
 
+import { useEffect } from "react";
 import Link from "next/link";
-import { Settings } from "lucide-react";
-import { useGamification } from "@/lib/gamificationContext";
+import { Flame, Settings } from "lucide-react";
+import { registerVisit, usePoints } from "@/lib/points";
 
 export default function GlobalHeader() {
-  const { points, level } = useGamification();
-  const progress = Math.min(((points % 500) / 500) * 100, 100);
+  const { total, level, streak } = usePoints();
+
+  useEffect(() => {
+    registerVisit();
+  }, []);
 
   return (
     <header className="sticky top-0 z-50 h-14 bg-zinc-950 border-b border-zinc-800">
@@ -17,17 +21,23 @@ export default function GlobalHeader() {
           <span className="font-bold text-xl text-white">ElHub</span>
         </Link>
 
-        <Link href="/perfil" className="flex flex-col items-end">
+        <Link href="/perfil" className="flex flex-col items-end" aria-label="Tu perfil y puntos">
           <span className="bg-zinc-900 border border-zinc-800 px-3 py-1 rounded-full flex items-center gap-2 text-xs">
             <span className="text-yellow-400">★</span>
-            <span className="font-semibold tabular-nums">{points.toLocaleString()} pts</span>
+            <span className="font-semibold tabular-nums">{total.toLocaleString()} pts</span>
             <span className="text-zinc-600">•</span>
-            <span className="text-emerald-400">Nivel {level}</span>
+            <span className="text-emerald-400">Nv. {level.level}</span>
+            {streak > 1 && (
+              <span className="flex items-center text-orange-400 font-semibold">
+                <Flame className="w-3.5 h-3.5" />
+                {streak}
+              </span>
+            )}
           </span>
           <span className="w-24 h-1 bg-zinc-800 rounded-full mt-1 overflow-hidden">
             <span
               className="block h-full bg-gradient-to-r from-emerald-400 to-pr-red transition-all duration-300"
-              style={{ width: `${progress}%` }}
+              style={{ width: `${Math.round(level.progress * 100)}%` }}
             />
           </span>
         </Link>

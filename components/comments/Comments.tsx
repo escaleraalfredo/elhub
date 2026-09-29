@@ -11,7 +11,7 @@ import { Fragment, useId, useMemo, useState } from "react";
 import { Heart, MessageCircle, X } from "lucide-react";
 import Avatar from "@/components/ui/Avatar";
 import BottomSheet from "@/components/ui/BottomSheet";
-import { useGamification } from "@/lib/gamificationContext";
+import { award } from "@/lib/points";
 import {
   CURRENT_USER,
   useCommentCount,
@@ -38,7 +38,6 @@ function renderText(text: string) {
 
 function useThread(threadId: string, seed?: SeedComment[]) {
   const thread = useComments(threadId, seed);
-  const { addPoints } = useGamification();
   const [draft, setDraft] = useState("");
   const [replyTo, setReplyTo] = useState<{ id: string; author: string } | null>(null);
   const [expanded, setExpanded] = useState<Record<string, boolean>>({});
@@ -72,7 +71,7 @@ function useThread(threadId: string, seed?: SeedComment[]) {
     if (replyTo) setExpanded((e) => ({ ...e, [replyTo.id]: true }));
     setDraft("");
     setReplyTo(null);
-    addPoints(5, "Comentario");
+    award("comment");
   };
 
   return {
@@ -254,22 +253,33 @@ function Composer({ api }: { api: ThreadApi }) {
   );
 }
 
-/** Comments in a bottom sheet (feeds: news, X, memes, reels). */
+/** Comments in a bottom sheet (feeds: news, X, sports). */
 export function CommentsSheet({
   open,
   onClose,
   threadId,
   seed,
+  title = "Comentarios",
+  header,
 }: {
   open: boolean;
   onClose: () => void;
   threadId: string;
   seed?: SeedComment[];
+  title?: string;
+  /** Optional content above the comments (game box score, event details...). */
+  header?: React.ReactNode;
 }) {
   const api = useThread(threadId, seed);
   return (
-    <BottomSheet open={open} onClose={onClose} title="Comentarios" footer={<Composer api={api} />}>
+    <BottomSheet open={open} onClose={onClose} title={title} footer={<Composer api={api} />}>
+      {header && <div className="border-b border-zinc-800">{header}</div>}
       <div className="px-4 py-4">
+        {header && (
+          <h4 className="text-sm font-semibold mb-4">
+            Comentarios <span className="text-zinc-500 font-normal">({api.count})</span>
+          </h4>
+        )}
         <CommentList api={api} />
       </div>
     </BottomSheet>
