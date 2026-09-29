@@ -4,7 +4,6 @@ import { Geist, Geist_Mono } from "next/font/google";
 import "./globals.css";
 import { Toaster } from "sonner";
 import { GamificationProvider } from "@/lib/gamificationContext";
-import { NewsProvider } from "@/lib/newsContext";
 import GlobalHeader from "@/components/GlobalHeader";
 import BottomNav from "@/components/BottomNav";
 
@@ -30,14 +29,12 @@ export default function RootLayout({
 }) {
   return (
     <html lang="es" className="dark">
-      <body className={`${geistSans.variable} ${geistMono.variable} bg-dark-bg text-white`}>
+      <body className={`${geistSans.variable} ${geistMono.variable} bg-dark-bg text-white antialiased`}>
         <GamificationProvider>
-          <NewsProvider>
-            <GlobalHeader />
-            {children}
-            <BottomNav />
-            <Toaster position="top-center" richColors closeButton />
-          </NewsProvider>
+          <GlobalHeader />
+          {children}
+          <BottomNav />
+          <Toaster position="top-center" richColors closeButton />
         </GamificationProvider>
       </body>
     </html>

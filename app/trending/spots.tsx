@@ -95,11 +95,11 @@ export default function Spots({ activeCategory, viewMode, setShowRatingModal }: 
   }
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-4">
       {filteredSpots.map((spot) => (
         <div 
           key={spot.id} 
-          className="bg-zinc-900 border border-zinc-800 rounded-3xl overflow-hidden hover:border-zinc-700 transition-colors"
+          className="bg-zinc-900 border border-zinc-800 rounded-3xl overflow-hidden"
         >
           <div className="relative">
             <img 
@@ -116,7 +116,7 @@ export default function Spots({ activeCategory, viewMode, setShowRatingModal }: 
           <div className="p-5">
             <div className="flex justify-between items-start">
               <div>
-                <h3 className="text-white font-bold text-2xl">{spot.name}</h3>
+                <h3 className="text-white font-bold text-xl">{spot.name}</h3>
                 <div className="flex items-center gap-1 text-zinc-400 text-sm mt-1">
                   <MapPin className="w-4 h-4" />
                   {spot.location}
@@ -126,9 +126,9 @@ export default function Spots({ activeCategory, viewMode, setShowRatingModal }: 
 
               <button
                 onClick={() => setShowRatingModal(spot.id)}
-                className="bg-pr-red hover:bg-red-600 text-white text-sm font-semibold px-6 py-3 rounded-2xl transition-all active:scale-95"
+                className="bg-pr-red hover:bg-red-600 text-white text-sm font-semibold px-5 py-2.5 rounded-full transition-all active:scale-95"
               >
-                Rate it
+                Calificar
               </button>
             </div>
 

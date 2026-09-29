@@ -1,189 +1,89 @@
+// app/comunidad/memes/page.tsx
 "use client";
+
 import { useState } from "react";
-import { Heart, MessageCircle, Share2, Plus, Smile } from "lucide-react";
+import { Bookmark, Heart, Send } from "lucide-react";
 import { toast } from "sonner";
+import { Card, PageContent } from "@/components/ui/Page";
+import Avatar from "@/components/ui/Avatar";
+import SafeImg from "@/components/ui/SafeImg";
+import UnifiedFAB from "@/components/UnifiedFAB";
+import { CommentButton, CommentsSheet, ViewAllComments } from "@/components/comments/Comments";
 import { useGamification } from "@/lib/gamificationContext";
-
-type ReactionEmoji = "😂" | "🔥" | "🥲" | "👑";
-type Reactions = Partial<Record<ReactionEmoji, number>>;
-
-type Meme = {
-  id: number;
-  username: string;
-  image: string;
-  caption: string;
-  likes: number;
-  liked: boolean;
-  comments: number;
-  time: string;
-  reactions: Reactions;
-};
+import { MEMES, type Meme } from "@/lib/community/data";
+import { formatCount } from "@/lib/time";
+import { cn } from "@/lib/utils";
 
 export default function MemesPage() {
   const { addPoints } = useGamification();
+  const [memes, setMemes] = useState<Meme[]>(MEMES);
+  const [saved, setSaved] = useState<Record<number, boolean>>({});
+  const [openFor, setOpenFor] = useState<Meme | null>(null);
 
-  const [memes, setMemes] = useState<Meme[]>([
-    {
-      id: 1,
-      username: "@bayamonero",
-      image: "https://picsum.photos/id/1015/600/800",
-      caption: "Cuando el pernil se acaba antes de las 12 🥲",
-      likes: 342,
-      liked: false,
-      comments: 28,
-      time: "15m",
-      reactions: { "😂": 45, "🔥": 32, "🥲": 18 },
-    },
-    {
-      id: 2,
-      username: "@santurcevibes",
-      image: "https://picsum.photos/id/870/600/800",
-      caption: "Bad Bunny dijo: \"Yo no soy de aquí pero soy de allá\" 😂",
-      likes: 1240,
-      liked: true,
-      comments: 67,
-      time: "2h",
-      reactions: { "😂": 89, "🔥": 67, "👑": 45 },
-    },
-    {
-      id: 3,
-      username: "@playero_pr",
-      image: "https://picsum.photos/id/1016/600/800",
-      caption: "Yo tratando de explicar a mi jefe por qué llegué tarde por el tapón",
-      likes: 892,
-      liked: false,
-      comments: 45,
-      time: "5h",
-      reactions: { "😂": 67, "🥲": 23 },
-    },
-  ]);
-
-  const toggleLike = (memeId: number) => {
+  const like = (id: number, only = false) =>
     setMemes((prev) =>
-      prev.map((meme) =>
-        meme.id === memeId
-          ? {
-              ...meme,
-              liked: !meme.liked,
-              likes: meme.liked ? meme.likes - 1 : meme.likes + 1,
-            }
-          : meme
-      )
-    );
-    toast.success("❤️ Me gusta");
-    addPoints(2, "Meme like");
-  };
-
-  const addReaction = (memeId: number, emoji: ReactionEmoji) => {
-    setMemes((prev) =>
-      prev.map((meme) => {
-        if (meme.id !== memeId) return meme;
-
-        return {
-          ...meme,
-          reactions: {
-            ...meme.reactions,
-            [emoji]: (meme.reactions[emoji] ?? 0) + 1,
-          },
-        };
+      prev.map((m) => {
+        if (m.id !== id || (only && m.liked)) return m;
+        if (!m.liked) addPoints(2, "Like meme");
+        return { ...m, liked: !m.liked, likes: m.likes + (m.liked ? -1 : 1) };
       })
     );
-    toast.success(`Reaccionaste con ${emoji}`);
-    addPoints(1, "Meme reaction");
-  };
 
   return (
-    <div className="min-h-screen bg-dark-bg pb-20 relative">
-      <div className="max-w-md mx-auto px-4 py-4 space-y-6">
+    <>
+      <PageContent>
         {memes.map((meme) => (
-          <div
-            key={meme.id}
-            className="bg-zinc-900 rounded-3xl overflow-hidden border border-zinc-800"
-          >
-            <div className="relative">
-              <img
-                src={meme.image}
-                alt="meme"
-                className="w-full aspect-square object-cover"
-              />
+          <Card key={meme.id}>
+            <div className="flex items-center gap-3 px-4 py-3">
+              <Avatar name={meme.username} size={32} />
+              <span className="font-semibold text-sm">{meme.username}</span>
+              <span className="text-xs text-zinc-500">· {meme.time}</span>
             </div>
-
-            <div className="p-5">
-              <div className="flex items-center gap-3 mb-3">
-                <div className="w-8 h-8 bg-zinc-700 rounded-full" />
-                <div>
-                  <p className="font-semibold text-sm">{meme.username}</p>
-                  <p className="text-xs text-zinc-500">{meme.time}</p>
-                </div>
+            <div onDoubleClick={() => like(meme.id, true)} className="bg-zinc-950">
+              <SafeImg src={meme.image} alt={meme.caption} className="w-full aspect-square object-cover" />
+            </div>
+            <div className="px-4 pt-3 pb-4">
+              <div className="flex items-center gap-5">
+                <button
+                  onClick={() => like(meme.id)}
+                  aria-label="Me gusta"
+                  className={cn(meme.liked ? "text-red-500" : "text-zinc-300 hover:text-white")}
+                >
+                  <Heart className={cn("w-6 h-6", meme.liked && "fill-current")} />
+                </button>
+                <CommentButton threadId={`meme:${meme.id}`} seed={meme.seed} onClick={() => setOpenFor(meme)} />
+                <button onClick={() => toast.success("Enlace copiado")} aria-label="Compartir" className="text-zinc-300 hover:text-white">
+                  <Send className="w-5 h-5" />
+                </button>
+                <button
+                  onClick={() => setSaved((s) => ({ ...s, [meme.id]: !s[meme.id] }))}
+                  aria-label="Guardar"
+                  className="ml-auto text-zinc-300 hover:text-white"
+                >
+                  <Bookmark className={cn("w-6 h-6", saved[meme.id] && "fill-current")} />
+                </button>
               </div>
-
-              <p className="text-[14.5px] leading-relaxed text-zinc-200 mb-6">
+              <p className="mt-2 text-sm font-semibold">{formatCount(meme.likes)} Me gusta</p>
+              <p className="mt-1 text-sm text-zinc-100">
+                <span className="font-semibold mr-1.5">{meme.username}</span>
                 {meme.caption}
               </p>
-
-              <div className="flex flex-wrap gap-2 mb-6">
-                {Object.entries(meme.reactions).map(([emoji, count]) => (
-                  <button
-                    key={emoji}
-                    onClick={() => addReaction(meme.id, emoji as ReactionEmoji)}
-                    className="bg-zinc-800 hover:bg-zinc-700 transition-all px-4 py-1.5 rounded-full text-sm flex items-center gap-1.5 active:scale-95"
-                  >
-                    {emoji} <span className="text-zinc-400 text-xs">{count}</span>
-                  </button>
-                ))}
-
-                <button
-                  onClick={() => toast.info("Selector de emojis pronto disponible")}
-                  className="bg-zinc-800 hover:bg-zinc-700 transition-all px-4 py-1.5 rounded-full text-sm flex items-center gap-1.5 active:scale-95"
-                >
-                  <Smile className="w-4 h-4" />
-                </button>
-              </div>
-
-              <div className="flex items-center justify-between text-sm border-t border-zinc-800 pt-4">
-                <div className="flex items-center gap-6">
-                  <button
-                    onClick={() => toggleLike(meme.id)}
-                    className={`flex items-center gap-2 transition-all ${
-                      meme.liked ? "text-red-500" : "text-zinc-400 hover:text-red-500"
-                    }`}
-                  >
-                    <Heart className={`w-5 h-5 ${meme.liked ? "fill-current" : ""}`} />
-                    <span>{meme.likes}</span>
-                  </button>
-
-                  <button
-                    onClick={() => toast.info("Selector de emojis pronto disponible")}
-                    className="flex items-center gap-2 text-zinc-400 hover:text-white transition-all"
-                  >
-                    <Smile className="w-5 h-5" />
-                  </button>
-                </div>
-
-                <button className="flex items-center gap-2 text-zinc-400 hover:text-white transition-all">
-                  <MessageCircle className="w-5 h-5" />
-                  <span>{meme.comments}</span>
-                </button>
-
-                <button
-                  onClick={() => toast.success("Compartido")}
-                  className="flex items-center gap-2 text-zinc-400 hover:text-white transition-all"
-                >
-                  <Share2 className="w-5 h-5" />
-                </button>
+              <div className="mt-1">
+                <ViewAllComments threadId={`meme:${meme.id}`} seed={meme.seed} onClick={() => setOpenFor(meme)} />
               </div>
             </div>
-          </div>
+          </Card>
         ))}
-      </div>
+      </PageContent>
 
-      <button
-        onClick={() => toast.info("Crear meme pronto disponible")}
-        className="fixed bottom-24 right-6 z-50 w-16 h-16 bg-pr-red hover:bg-red-600 active:bg-red-700 transition-all rounded-full flex items-center justify-center shadow-2xl shadow-pr-red/40 active:scale-95 border-4 border-zinc-950"
-      >
-        <Plus className="w-8 h-8 text-white" />
-      </button>
+      <UnifiedFAB onClick={() => toast.info("Subir memes llega pronto")} label="Nuevo meme" />
 
-    </div>
+      <CommentsSheet
+        open={openFor !== null}
+        onClose={() => setOpenFor(null)}
+        threadId={`meme:${openFor?.id ?? ""}`}
+        seed={openFor?.seed}
+      />
+    </>
   );
 }

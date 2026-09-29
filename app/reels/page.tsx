@@ -1,117 +1,74 @@
+// app/reels/page.tsx
 "use client";
-import { useState, useRef } from "react";
-import { Heart, MessageCircle, Share2 } from "lucide-react";
+
+import { useState } from "react";
+import { Heart, Share2 } from "lucide-react";
 import { toast } from "sonner";
+import Avatar from "@/components/ui/Avatar";
+import { CommentButton, CommentsSheet } from "@/components/comments/Comments";
+import { useGamification } from "@/lib/gamificationContext";
+import { REELS, type Reel } from "@/lib/community/data";
+import { formatCount } from "@/lib/time";
+import { cn } from "@/lib/utils";
 
 export default function ReelsPage() {
-  const [reels, setReels] = useState([
-    {
-      id: 1,
-      username: "@bayamonero",
-      caption: "Un chinchorro en Piñones al atardecer 🔥 ¿Quién viene?",
-      likes: 1240,
-      liked: false,
-      comments: 89,
-      image: "https://picsum.photos/id/1015/1080/1920",
-    },
-    {
-      id: 2,
-      username: "@santurcevibes",
-      caption: "Bad Bunny en el Coliseo - la energía estaba brutal",
-      likes: 3420,
-      liked: true,
-      comments: 156,
-      image: "https://picsum.photos/id/870/1080/1920",
-    },
-  ]);
+  const { addPoints } = useGamification();
+  const [reels, setReels] = useState<Reel[]>(REELS);
+  const [openFor, setOpenFor] = useState<Reel | null>(null);
 
-  const [currentIndex, setCurrentIndex] = useState(0);
-  const containerRef = useRef<HTMLDivElement>(null);
-
-  const currentReel = reels[currentIndex];
-
-  const toggleLikeReel = () => {
-    setReels(prev =>
-      prev.map((r, i) =>
-        i === currentIndex
-          ? {
-              ...r,
-              liked: !r.liked,
-              likes: r.liked ? r.likes - 1 : r.likes + 1,
-            }
-          : r
-      )
+  const like = (id: number, only = false) =>
+    setReels((prev) =>
+      prev.map((r) => {
+        if (r.id !== id || (only && r.liked)) return r;
+        if (!r.liked) addPoints(2, "Like reel");
+        return { ...r, liked: !r.liked, likes: r.likes + (r.liked ? -1 : 1) };
+      })
     );
-    toast.success(currentReel.liked ? "Like removido" : "❤️ Like");
-  };
 
   return (
-    <div className="h-[100dvh] bg-black flex flex-col overflow-hidden">
-      
-      {/* Reels Container */}
-      <div
-        ref={containerRef}
-        className="flex-1 overflow-y-auto snap-y snap-mandatory scrollbar-hide"
-        onScroll={(e) => {
-          const containerHeight = e.currentTarget.clientHeight;
-          const scrollTop = e.currentTarget.scrollTop;
-          const newIndex = Math.round(scrollTop / containerHeight);
+    <div className="bg-black h-[calc(100dvh-3.5rem)] overflow-y-auto snap-y snap-mandatory scrollbar-hide">
+      {reels.map((reel) => (
+        <section
+          key={reel.id}
+          onDoubleClick={() => like(reel.id, true)}
+          className="relative h-[calc(100dvh-3.5rem)] w-full max-w-md mx-auto snap-start overflow-hidden"
+        >
+          {/* eslint-disable-next-line @next/next/no-img-element */}
+          <img src={reel.image} alt="" className="absolute inset-0 w-full h-full object-cover" />
+          <div className="absolute inset-0 bg-gradient-to-b from-black/30 via-transparent to-black/80" />
 
-          if (newIndex !== currentIndex && newIndex >= 0 && newIndex < reels.length) {
-            setCurrentIndex(newIndex);
-          }
-        }}
-      >
-        {reels.map((reel) => (
-          <div
-            key={reel.id}
-            className="h-[100dvh] w-full snap-start relative flex-shrink-0"
-          >
-            {/* Image */}
-            <img
-              src={reel.image}
-              alt="reel"
-              className="absolute inset-0 w-full h-full object-cover"
-            />
-
-            {/* Gradient */}
-            <div className="absolute inset-0 bg-gradient-to-b from-black/30 via-transparent to-black/80" />
-
-            {/* Bottom Content */}
-            <div className="absolute bottom-[calc(env(safe-area-inset-bottom)+90px)] left-4 right-4 text-white z-10">
-              <div className="flex items-center gap-3 mb-3">
-                <div className="w-10 h-10 bg-zinc-700 rounded-full" />
-                <div className="font-semibold text-base">{reel.username}</div>
-              </div>
-              <p className="text-[15px] leading-snug pr-14">
-                {reel.caption}
-              </p>
+          <div className="absolute left-4 right-20 bottom-[calc(5.5rem+env(safe-area-inset-bottom))] text-white">
+            <div className="flex items-center gap-3 mb-2">
+              <Avatar name={reel.username} size={36} className="ring-2 ring-white/80" />
+              <span className="font-semibold">{reel.username}</span>
             </div>
-
-            {/* Right Actions */}
-            <div className="absolute bottom-[calc(env(safe-area-inset-bottom)+90px)] right-4 flex flex-col items-center gap-6 z-20">
-              <button onClick={toggleLikeReel} className="flex flex-col items-center">
-                <Heart
-                  className={`w-10 h-10 ${
-                    reel.liked ? "fill-red-500 text-red-500" : "text-white"
-                  }`}
-                />
-                <span className="text-xs mt-1">{reel.likes}</span>
-              </button>
-
-              <button className="flex flex-col items-center">
-                <MessageCircle className="w-10 h-10 text-white" />
-                <span className="text-xs mt-1">{reel.comments}</span>
-              </button>
-
-              <button className="flex flex-col items-center">
-                <Share2 className="w-10 h-10 text-white" />
-              </button>
-            </div>
+            <p className="text-[15px] leading-snug">{reel.caption}</p>
           </div>
-        ))}
-      </div>
 
+          <div className="absolute right-3 bottom-[calc(5.5rem+env(safe-area-inset-bottom))] flex flex-col items-center gap-6 text-white">
+            <button onClick={() => like(reel.id)} className="flex flex-col items-center" aria-label="Me gusta">
+              <Heart className={cn("w-8 h-8 drop-shadow", reel.liked && "fill-red-500 text-red-500")} />
+              <span className="text-xs mt-1 font-semibold">{formatCount(reel.likes)}</span>
+            </button>
+            <CommentButton
+              threadId={`reel:${reel.id}`}
+              seed={reel.seed}
+              onClick={() => setOpenFor(reel)}
+              className="flex-col gap-1 text-white [&_svg]:w-8 [&_svg]:h-8 [&_span]:text-xs [&_span]:font-semibold"
+            />
+            <button onClick={() => toast.success("Enlace copiado")} aria-label="Compartir">
+              <Share2 className="w-8 h-8 drop-shadow" />
+            </button>
+          </div>
+        </section>
+      ))}
+
+      <CommentsSheet
+        open={openFor !== null}
+        onClose={() => setOpenFor(null)}
+        threadId={`reel:${openFor?.id ?? ""}`}
+        seed={openFor?.seed}
+      />
     </div>
   );
 }

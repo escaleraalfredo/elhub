@@ -3,6 +3,7 @@
 import { useState } from "react";
 import { Users } from "lucide-react";
 import { useGamification } from "@/lib/gamificationContext";
+import { Card, PageContent } from "@/components/ui/Page";
 import { toast } from "sonner";
 
 export default function PueblosPage() {
@@ -58,10 +59,9 @@ export default function PueblosPage() {
   };
 
   return (
-    <div className="min-h-screen bg-dark-bg pb-20">
-      <div className="max-w-md mx-auto px-4 py-6 space-y-4">
+    <PageContent>
         {pueblos.map((pueblo) => (
-          <div key={pueblo.id} className="bg-zinc-900 rounded-3xl p-6 border border-zinc-800">
+          <Card key={pueblo.id} className="p-5">
             <div className="flex items-start justify-between">
               <div>
                 <h3 className="font-semibold text-xl">{pueblo.name}</h3>
@@ -80,7 +80,7 @@ export default function PueblosPage() {
 
             <button
               onClick={() => handleCheckIn(pueblo.id)}
-              className={`mt-6 w-full py-3 rounded-2xl font-medium transition-all ${
+              className={`mt-4 w-full py-3 rounded-2xl font-medium transition-all ${
                 pueblo.checkedIn 
                   ? "bg-zinc-800 text-zinc-400" 
                   : "bg-pr-red text-white hover:brightness-110"
@@ -88,10 +88,8 @@ export default function PueblosPage() {
             >
               {pueblo.checkedIn ? "✓ Ya estoy aquí" : "Check-in ahora"}
             </button>
-          </div>
+          </Card>
         ))}
-      </div>
-
-    </div>
+    </PageContent>
   );
 }
