@@ -1,6 +1,7 @@
 // lib/sports/getLeague.ts
-import { espnScoreboard, espnStandings } from "./espn";
-import { leagueById } from "./leagues";
+import { espnMlbPostseason, espnScoreboard, espnStandings, espnUfc } from "./espn";
+import { projectedMlbBracket } from "./bracket";
+import { leagueById, shiftKey } from "./leagues";
 import { samplePrGames, samplePrStandings } from "./prLeagues";
 import type { LeagueData, LeagueId } from "./types";
 
@@ -11,16 +12,35 @@ export async function getLeague(id: LeagueId, date: string): Promise<LeagueData>
   const meta = leagueById(id)!;
   const updatedAt = new Date().toISOString();
 
+  if (id === "ufc") {
+    const games = await espnUfc(date, shiftKey);
+    return {
+      league: id,
+      date,
+      games: games ?? [],
+      standings: [],
+      source: "espn",
+      note: games ? undefined : "ESPN no respondió. Intenta de nuevo en unos minutos.",
+      updatedAt,
+    };
+  }
+
   if (meta.espn) {
-    const [games, standings] = await Promise.all([espnScoreboard(id, meta.espn, date), espnStandings(meta.espn)]);
+    const [games, standings, post] = await Promise.all([
+      espnScoreboard(id, meta.espn, date),
+      espnStandings(meta.espn),
+      id === "mlb" ? espnMlbPostseason(date) : Promise.resolve(null),
+    ]);
+    const bracket = id === "mlb" ? post ?? (standings ? projectedMlbBracket(standings) : null) ?? undefined : undefined;
     if (games && standings) {
-      return { league: id, date, games, standings, source: "espn", updatedAt };
+      return { league: id, date, games, standings, bracket, source: "espn", updatedAt };
     }
     return {
       league: id,
       date,
       games: games ?? [],
       standings: standings ?? [],
+      bracket,
       source: "espn",
       note: "ESPN no respondió. Intenta de nuevo en unos minutos.",
       updatedAt,

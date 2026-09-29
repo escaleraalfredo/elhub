@@ -1,5 +1,5 @@
 // lib/sports/types.ts
-export type LeagueId = "nba" | "mlb" | "bsn" | "lbprc" | "doblea";
+export type LeagueId = "nba" | "mlb" | "ufc" | "bsn" | "lbprc" | "doblea";
 export type GameState = "pre" | "in" | "post";
 
 export interface TeamRef {
@@ -40,6 +40,10 @@ export interface Game {
   venue?: string;
   broadcast?: string;
   odds?: Odds;
+  /** UFC: event name the fight belongs to. */
+  group?: string;
+  /** UFC: weight class / card segment. */
+  detail?: string;
 }
 
 export interface StandingRow {
@@ -56,11 +60,39 @@ export interface StandingsGroup {
   rows: StandingRow[];
 }
 
+export interface BracketSide {
+  team?: TeamRef;
+  seed?: number;
+  wins?: number;
+  winner?: boolean;
+}
+
+export interface BracketSeries {
+  id: string;
+  league?: "AL" | "NL";
+  top: BracketSide;
+  bottom: BracketSide;
+  summary?: string;
+}
+
+export interface BracketRound {
+  id: "wc" | "ds" | "cs" | "ws";
+  name: string;
+  series: BracketSeries[];
+}
+
+export interface Bracket {
+  /** "live" = built from real postseason games; "projected" = from standings. */
+  mode: "live" | "projected";
+  rounds: BracketRound[];
+}
+
 export interface LeagueData {
   league: LeagueId;
   date: string;
   games: Game[];
   standings: StandingsGroup[];
+  bracket?: Bracket;
   source: "espn" | "sample";
   note?: string;
   updatedAt: string;

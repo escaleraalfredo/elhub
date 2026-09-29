@@ -5,7 +5,7 @@ export interface LeagueMeta {
   id: LeagueId;
   name: string;
   fullName: string;
-  sport: "basketball" | "baseball";
+  sport: "basketball" | "baseball" | "mma";
   emoji: string;
   /** ESPN API path, when ESPN covers the league. */
   espn?: string;
@@ -17,6 +17,7 @@ export const LEAGUES: LeagueMeta[] = [
   { id: "doblea", name: "Doble A", fullName: "Béisbol Superior Doble A", sport: "baseball", emoji: "⚾" },
   { id: "nba", name: "NBA", fullName: "NBA", sport: "basketball", emoji: "🏀", espn: "basketball/nba" },
   { id: "mlb", name: "MLB", fullName: "MLB", sport: "baseball", emoji: "⚾", espn: "baseball/mlb" },
+  { id: "ufc", name: "UFC", fullName: "UFC", sport: "mma", emoji: "🥊", espn: "mma/ufc" },
 ];
 
 export function leagueById(id: string): LeagueMeta | undefined {

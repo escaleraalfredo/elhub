@@ -9,7 +9,7 @@ import UnifiedFAB from "@/components/UnifiedFAB";
 import VoteColumn, { applyVote } from "@/components/ui/VoteColumn";
 import CreateSheet, { inputClass } from "@/components/ui/CreateSheet";
 import { CommentButton } from "@/components/comments/Comments";
-import { useGamification } from "@/lib/gamificationContext";
+import { award } from "@/lib/points";
 import {
   TOPICS,
   TOPIC_CATEGORIES,
@@ -25,7 +25,6 @@ type Filter = (typeof FILTERS)[number];
 
 export default function TemasPage() {
   const router = useRouter();
-  const { addPoints } = useGamification();
   const [filter, setFilter] = useState<Filter>("Todos");
   const [topics, setTopics] = useState<Topic[]>(TOPICS);
   const [showNew, setShowNew] = useState(false);
@@ -49,7 +48,7 @@ export default function TemasPage() {
       prev.map((t) => {
         if (t.id !== id) return t;
         const next = applyVote(t.votes, t.userVote, dir);
-        if (next.userVote) addPoints(3, "Voto tema");
+        if (next.userVote) award("vote_topic", { key: String(t.id) });
         return { ...t, ...next };
       })
     );
@@ -73,8 +72,8 @@ export default function TemasPage() {
     setTopics((prev) => [topic, ...prev]);
     setDraft({ title: "", category: "Otros" });
     setShowNew(false);
-    addPoints(10, "Nuevo tema");
-    toast.success("¡Tema creado! +10 pts");
+    award("create_topic");
+    toast.success("¡Tema creado!");
   };
 
   return (
@@ -124,7 +123,7 @@ export default function TemasPage() {
         title="Nuevo tema"
         actionLabel="Publicar tema"
         onAction={create}
-        hint="+10 puntos por crear un tema"
+        hint="+10 pts por crear un tema"
       >
         <textarea
           placeholder="¿Qué quieres discutir con la comunidad boricua?"

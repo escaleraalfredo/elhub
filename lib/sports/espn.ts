@@ -180,3 +180,167 @@ export async function espnStandings(path: string): Promise<StandingsGroup[] | nu
   walk(json);
   return groups;
 }
+
+// ---------------------------------------------------------------- UFC
+
+interface EspnAthlete {
+  id?: string;
+  displayName?: string;
+  shortName?: string;
+  flag?: { href?: string };
+}
+interface EspnFight {
+  id: string;
+  date?: string;
+  type?: { abbreviation?: string; text?: string };
+  cardSegment?: { description?: string };
+  status?: {
+    type?: { state?: string; shortDetail?: string; detail?: string };
+    result?: { displayName?: string; name?: string };
+    period?: number;
+    displayClock?: string;
+  };
+  competitors?: { order?: number; winner?: boolean; athlete?: EspnAthlete; records?: { summary?: string }[] }[];
+  odds?: EspnOdds[];
+}
+interface EspnCardEvent {
+  id: string;
+  name?: string;
+  shortName?: string;
+  date: string;
+  competitions?: EspnFight[];
+}
+
+function fighter(a: EspnAthlete | undefined): TeamRef {
+  const name = a?.displayName ?? "Por anunciar";
+  const initials = name
+    .split(/\s+/)
+    .map((p) => p[0])
+    .join("")
+    .slice(0, 3)
+    .toUpperCase();
+  return { id: a?.id ?? name, name, short: a?.shortName ?? name, abbr: initials, logo: a?.flag?.href };
+}
+
+/** UFC fight cards from ~2 weeks ago to ~6 weeks ahead, main event first. */
+export async function espnUfc(date: string, shift: (k: string, d: number) => string): Promise<Game[] | null> {
+  const range = `${shift(date, -14)}-${shift(date, 45)}`;
+  const json = await getJson<{ events?: EspnCardEvent[] }>(`${SITE}/mma/ufc/scoreboard?dates=${range}`, 300);
+  if (!json) return null;
+  const games: Game[] = [];
+  for (const ev of json.events ?? []) {
+    const fights = [...(ev.competitions ?? [])].reverse();
+    for (const f of fights) {
+      const [c1, c2] = [...(f.competitors ?? [])].sort((a, b) => (a.order ?? 0) - (b.order ?? 0));
+      const st = f.status?.type;
+      const state = (["pre", "in", "post"].includes(st?.state ?? "") ? st!.state : "pre") as GameState;
+      const start = f.date ?? ev.date;
+      const result = f.status?.result?.displayName;
+      games.push({
+        id: `${ev.id}-${f.id}`,
+        league: "ufc",
+        startTime: start,
+        state,
+        status:
+          state === "pre"
+            ? new Date(start).toLocaleDateString("es-PR", { weekday: "short", day: "numeric", month: "short", timeZone: "America/Puerto_Rico" })
+            : state === "post"
+              ? result
+                ? `Final · ${result}`
+                : "Final"
+              : `R${f.status?.period ?? 1} ${f.status?.displayClock ?? ""}`.trim(),
+        away: { team: fighter(c1?.athlete), record: c1?.records?.[0]?.summary, winner: c1?.winner },
+        home: { team: fighter(c2?.athlete), record: c2?.records?.[0]?.summary, winner: c2?.winner },
+        group: ev.name ?? ev.shortName ?? "UFC",
+        detail: [f.type?.abbreviation ?? f.type?.text, f.cardSegment?.description].filter(Boolean).join(" · ") || undefined,
+        odds: parseOdds(f.odds?.[0], "", ""),
+      });
+    }
+  }
+  return games;
+}
+
+// ---------------------------------------------------------------- MLB postseason
+
+interface EspnPostEvent extends EspnEvent {
+  notes?: { headline?: string }[];
+  competitions?: (NonNullable<EspnEvent["competitions"]>[number] & {
+    notes?: { headline?: string }[];
+    series?: { summary?: string; competitors?: { id?: string; wins?: number }[] };
+  })[];
+}
+
+const ROUND_NAMES: Record<"wc" | "ds" | "cs" | "ws", string> = {
+  wc: "Serie del Comodín",
+  ds: "Serie Divisional",
+  cs: "Serie de Campeonato",
+  ws: "Serie Mundial",
+};
+const WINS_NEEDED = { wc: 2, ds: 3, cs: 4, ws: 4 } as const;
+
+/** Real MLB postseason series for the season of `date`, or null if none yet. */
+export async function espnMlbPostseason(date: string): Promise<import("./types").Bracket | null> {
+  const year = date.slice(0, 4);
+  const json = await getJson<{ events?: EspnPostEvent[] }>(
+    `${SITE}/baseball/mlb/scoreboard?seasontype=3&dates=${year}0925-${year}1110&limit=300`,
+    300
+  );
+  const events = json?.events ?? [];
+  if (!events.length) return null;
+
+  type Acc = import("./types").BracketSeries & { round: keyof typeof ROUND_NAMES };
+  const series = new Map<string, Acc>();
+  for (const e of events) {
+    const comp = e.competitions?.[0];
+    const headline = comp?.notes?.[0]?.headline ?? e.notes?.[0]?.headline ?? "";
+    const round: keyof typeof ROUND_NAMES | null = /world series/i.test(headline)
+      ? "ws"
+      : /championship|alcs|nlcs/i.test(headline)
+        ? "cs"
+        : /division|alds|nlds/i.test(headline)
+          ? "ds"
+          : /wild ?card/i.test(headline)
+            ? "wc"
+            : null;
+    if (!round) continue;
+    const league = round === "ws" ? undefined : /\b(AL|American)/.test(headline) ? "AL" : /\b(NL|National)/.test(headline) ? "NL" : undefined;
+    const home = comp?.competitors?.find((c) => c.homeAway === "home");
+    const away = comp?.competitors?.find((c) => c.homeAway === "away");
+    if (!home?.team || !away?.team) continue;
+    const ids = [home.team.id ?? "", away.team.id ?? ""].sort();
+    const key = `${round}:${ids.join("-")}`;
+    const winsFor = (id?: string) => comp?.series?.competitors?.find((c) => c.id === id)?.wins;
+    const prev = series.get(key);
+    const top = prev?.top.team ? prev.top : { team: team(away.team) };
+    const bottom = prev?.bottom.team ? prev.bottom : { team: team(home.team) };
+    const tw = winsFor(top.team?.id);
+    const bw = winsFor(bottom.team?.id);
+    series.set(key, {
+      id: key,
+      round,
+      league,
+      top: { ...top, wins: Math.max(tw ?? 0, top.wins ?? 0) },
+      bottom: { ...bottom, wins: Math.max(bw ?? 0, bottom.wins ?? 0) },
+      summary: comp?.series?.summary ?? prev?.summary,
+    });
+  }
+  if (!series.size) return null;
+
+  const rounds = (["wc", "ds", "cs", "ws"] as const).map((id) => ({
+    id,
+    name: ROUND_NAMES[id],
+    series: [...series.values()]
+      .filter((s) => s.round === id)
+      .map(({ round, ...s }) => {
+        void round;
+        const need = WINS_NEEDED[id];
+        return {
+          ...s,
+          top: { ...s.top, winner: (s.top.wins ?? 0) >= need },
+          bottom: { ...s.bottom, winner: (s.bottom.wins ?? 0) >= need },
+        };
+      })
+      .sort((a, b) => (a.league ?? "").localeCompare(b.league ?? "")),
+  }));
+  return { mode: "live", rounds };
+}

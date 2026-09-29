@@ -9,7 +9,7 @@ import SafeImg from "@/components/ui/SafeImg";
 import { CommentButton, CommentsSheet } from "@/components/comments/Comments";
 import { PR_ACCOUNTS, type XPost, type XResponse } from "@/lib/x/types";
 import { useFetchJson } from "@/lib/useFetchJson";
-import { useGamification } from "@/lib/gamificationContext";
+import { award } from "@/lib/points";
 import { formatCount, timeAgo } from "@/lib/time";
 import { cn } from "@/lib/utils";
 
@@ -28,7 +28,6 @@ function PostText({ text }: { text: string }) {
 }
 
 function Post({ post, onComments }: { post: XPost; onComments: () => void }) {
-  const { addPoints } = useGamification();
   const [liked, setLiked] = useState(false);
   return (
     <article className="p-4 flex gap-3">
@@ -59,7 +58,7 @@ function Post({ post, onComments }: { post: XPost; onComments: () => void }) {
           </a>
           <button
             onClick={() => {
-              if (!liked) addPoints(2, "Like X");
+              if (!liked) award("like", { key: `x:${post.id}` });
               setLiked(!liked);
             }}
             className={cn("flex items-center gap-1.5", liked ? "text-red-500" : "hover:text-red-400")}

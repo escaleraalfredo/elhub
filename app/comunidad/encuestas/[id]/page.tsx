@@ -7,13 +7,12 @@ import { ChevronLeft } from "lucide-react";
 import { Card, EmptyState, PageContent } from "@/components/ui/Page";
 import PollOptions, { pollTotal } from "@/components/community/PollOptions";
 import { CommentSection } from "@/components/comments/Comments";
-import { useGamification } from "@/lib/gamificationContext";
+import { award } from "@/lib/points";
 import { POLLS, loadUserContent, type Poll } from "@/lib/community/data";
 
 export default function EncuestaDetailPage() {
   const { id } = useParams<{ id: string }>();
   const router = useRouter();
-  const { addPoints } = useGamification();
   const [poll, setPoll] = useState<Poll | null | undefined>(() => POLLS.find((p) => String(p.id) === id));
 
   useEffect(() => {
@@ -33,7 +32,7 @@ export default function EncuestaDetailPage() {
 
   const vote = (optionId: number) => {
     if (poll.userVote !== null) return;
-    addPoints(5, "Voto encuesta");
+    award("vote_poll", { key: String(poll.id) });
     setPoll({ ...poll, userVote: optionId, options: poll.options.map((o) => (o.id === optionId ? { ...o, votes: o.votes + 1 } : o)) });
   };
 

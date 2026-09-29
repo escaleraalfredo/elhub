@@ -3,7 +3,6 @@ import type { Metadata } from "next";
 import { Geist, Geist_Mono } from "next/font/google";
 import "./globals.css";
 import { Toaster } from "sonner";
-import { GamificationProvider } from "@/lib/gamificationContext";
 import GlobalHeader from "@/components/GlobalHeader";
 import BottomNav from "@/components/BottomNav";
 
@@ -30,12 +29,10 @@ export default function RootLayout({
   return (
     <html lang="es" className="dark">
       <body className={`${geistSans.variable} ${geistMono.variable} bg-dark-bg text-white antialiased`}>
-        <GamificationProvider>
-          <GlobalHeader />
-          {children}
-          <BottomNav />
-          <Toaster position="top-center" richColors closeButton />
-        </GamificationProvider>
+        <GlobalHeader />
+        {children}
+        <BottomNav />
+        <Toaster position="top-center" richColors closeButton />
       </body>
     </html>
   );

@@ -5,13 +5,13 @@ import { useState } from "react";
 import { Map } from "lucide-react";
 import { Chips, PageContent, PageShell, StickyBar, Tabs } from "@/components/ui/Page";
 import Spots from "./spots";
-import Checkins from "./checkins";
+import Eventos from "./eventos";
 
 const CATEGORIES = ["Todos", "Restaurantes", "Comida Rápida", "Bares", "Lounges", "Cigar Lounges", "Cafés", "Lechoneras"] as const;
 type Category = (typeof CATEGORIES)[number];
 
 export default function TrendingPage() {
-  const [tab, setTab] = useState<"spots" | "checkins">("spots");
+  const [tab, setTab] = useState<"eventos" | "spots">("eventos");
   const [category, setCategory] = useState<Category>("Todos");
   const [viewMode, setViewMode] = useState<"list" | "map">("list");
 
@@ -20,10 +20,10 @@ export default function TrendingPage() {
       <StickyBar>
         <Tabs
           active={tab}
-          onChange={(v) => setTab(v as "spots" | "checkins")}
+          onChange={(v) => setTab(v as "eventos" | "spots")}
           tabs={[
+            { label: "Eventos", value: "eventos" },
             { label: "Spots", value: "spots" },
-            { label: "Check-ins", value: "checkins" },
           ]}
         />
       </StickyBar>
@@ -45,10 +45,10 @@ export default function TrendingPage() {
       )}
 
       <PageContent>
-        {tab === "spots" ? (
-          <Spots activeCategory={category} viewMode={viewMode} setShowRatingModal={() => {}} />
+        {tab === "eventos" ? (
+          <Eventos />
         ) : (
-          <Checkins />
+          <Spots activeCategory={category} viewMode={viewMode} setShowRatingModal={() => {}} />
         )}
       </PageContent>
     </PageShell>

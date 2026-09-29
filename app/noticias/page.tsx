@@ -1,16 +1,17 @@
 // app/noticias/page.tsx
 "use client";
 
-import { useMemo, useState } from "react";
+import { Fragment, useMemo, useState } from "react";
 import { Bookmark, Heart, RefreshCw, Share2 } from "lucide-react";
 import { toast } from "sonner";
 import { Card, Chips, EmptyState, Notice, PageContent, Skeleton } from "@/components/ui/Page";
 import SafeImg from "@/components/ui/SafeImg";
+import Sponsored from "@/components/ui/Sponsored";
 import { CommentButton, CommentsSheet } from "@/components/comments/Comments";
 import { NEWS_SOURCES, sourceById } from "@/lib/news/sources";
 import type { NewsItem, NewsResponse } from "@/lib/news/types";
 import { useFetchJson } from "@/lib/useFetchJson";
-import { useGamification } from "@/lib/gamificationContext";
+import { award } from "@/lib/points";
 import { timeAgo } from "@/lib/time";
 import { cn } from "@/lib/utils";
 
@@ -50,6 +51,7 @@ function Actions({
         await navigator.clipboard.writeText(item.link);
         toast.success("Enlace copiado");
       }
+      award("share", { key: `news:${item.id}` });
     } catch {
       // user cancelled share sheet
     }
@@ -72,7 +74,6 @@ function Actions({
 
 export default function NoticiasPage() {
   const { data, loading, error, refresh } = useFetchJson<NewsResponse>("/api/news", 5 * 60_000);
-  const { addPoints } = useGamification();
   const [filter, setFilter] = useState<string>(ALL);
   const [liked, setLiked] = useState<Record<string, boolean>>({});
   const [saved, setSaved] = useState<Record<string, boolean>>({});
@@ -88,7 +89,7 @@ export default function NoticiasPage() {
 
   const like = (id: string) => {
     setLiked((l) => ({ ...l, [id]: !l[id] }));
-    if (!liked[id]) addPoints(2, "Like noticia");
+    if (!liked[id]) award("like", { key: `news:${id}` });
   };
   const save = (id: string) => {
     setSaved((s) => ({ ...s, [id]: !s[id] }));
@@ -140,7 +141,7 @@ export default function NoticiasPage() {
 
         {hero && (
           <Card>
-            <a href={hero.link} target="_blank" rel="noopener noreferrer" className="block">
+            <a href={hero.link} target="_blank" rel="noopener noreferrer" onClick={() => award("read_news", { key: hero.id })} className="block">
               <SafeImg src={hero.image} alt="" className="w-full aspect-[16/9] object-cover" />
               <div className="p-4 pb-0">
                 <div className="flex items-center gap-2">
@@ -156,24 +157,29 @@ export default function NoticiasPage() {
           </Card>
         )}
 
-        {rest.length > 0 && (
-          <Card className="divide-y divide-zinc-800">
-            {rest.map((item) => (
-              <article key={item.id} className="p-4">
-                <a href={item.link} target="_blank" rel="noopener noreferrer" className="flex gap-3">
-                  <div className="flex-1 min-w-0">
-                    <div className="flex items-center gap-2">
-                      <SourceBadge item={item} />
-                      <span className="text-xs text-zinc-500">· {timeAgo(item.publishedAt)}</span>
-                    </div>
-                    <h3 className="mt-1.5 text-[15px] font-semibold leading-snug text-white line-clamp-3">{item.title}</h3>
-                  </div>
-                  <SafeImg src={item.image} alt="" className="w-20 h-20 rounded-2xl object-cover shrink-0" />
-                </a>
-                {actions(item)}
-              </article>
-            ))}
-          </Card>
+        {[rest.slice(0, 4), rest.slice(4)].map((chunk, i) =>
+          chunk.length === 0 ? null : (
+            <Fragment key={i}>
+              {i === 1 && <Sponsored placement="noticias" />}
+              <Card className="divide-y divide-zinc-800">
+                {chunk.map((item) => (
+                  <article key={item.id} className="p-4">
+                    <a href={item.link} target="_blank" rel="noopener noreferrer" onClick={() => award("read_news", { key: item.id })} className="flex gap-3">
+                      <div className="flex-1 min-w-0">
+                        <div className="flex items-center gap-2">
+                          <SourceBadge item={item} />
+                          <span className="text-xs text-zinc-500">· {timeAgo(item.publishedAt)}</span>
+                        </div>
+                        <h3 className="mt-1.5 text-[15px] font-semibold leading-snug text-white line-clamp-3">{item.title}</h3>
+                      </div>
+                      <SafeImg src={item.image} alt="" className="w-20 h-20 rounded-2xl object-cover shrink-0" />
+                    </a>
+                    {actions(item)}
+                  </article>
+                ))}
+              </Card>
+            </Fragment>
+          )
         )}
       </PageContent>
 

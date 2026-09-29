@@ -10,13 +10,12 @@ import UnifiedFAB from "@/components/UnifiedFAB";
 import CreateSheet, { inputClass } from "@/components/ui/CreateSheet";
 import PollOptions, { pollTotal } from "@/components/community/PollOptions";
 import { CommentButton } from "@/components/comments/Comments";
-import { useGamification } from "@/lib/gamificationContext";
+import { award } from "@/lib/points";
 import { POLLS, loadUserContent, saveUserContent, type Poll } from "@/lib/community/data";
 import { cn } from "@/lib/utils";
 
 export default function EncuestasPage() {
   const router = useRouter();
-  const { addPoints } = useGamification();
   const [polls, setPolls] = useState<Poll[]>(POLLS);
   const [showNew, setShowNew] = useState(false);
   const [draft, setDraft] = useState({ question: "", options: ["", "", "", ""] });
@@ -37,8 +36,7 @@ export default function EncuestasPage() {
           : { ...p, userVote: optionId, options: p.options.map((o) => (o.id === optionId ? { ...o, votes: o.votes + 1 } : o)) }
       )
     );
-    addPoints(5, "Voto encuesta");
-    toast.success("¡Voto registrado! +5 pts");
+    award("vote_poll", { key: String(pollId) });
   };
 
   const like = (pollId: number) =>
@@ -63,8 +61,8 @@ export default function EncuestasPage() {
     setPolls((prev) => [poll, ...prev]);
     setDraft({ question: "", options: ["", "", "", ""] });
     setShowNew(false);
-    addPoints(15, "Nueva encuesta");
-    toast.success("¡Encuesta creada! +15 pts");
+    award("create_poll");
+    toast.success("¡Encuesta creada!");
   };
 
   return (
@@ -106,7 +104,7 @@ export default function EncuestasPage() {
         title="Nueva encuesta"
         actionLabel="Publicar encuesta"
         onAction={create}
-        hint="+15 puntos por crear una encuesta"
+        hint="+10 pts por crear una encuesta"
       >
         <textarea
           placeholder="¿Qué quieres preguntar a la comunidad?"
