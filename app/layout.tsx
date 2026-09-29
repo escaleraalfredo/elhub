@@ -35,6 +35,7 @@ export default function RootLayout({
           <NewsProvider>
             <GlobalHeader />
             {children}
+            <BottomNav />
             <Toaster position="top-center" richColors closeButton />
           </NewsProvider>
         </GamificationProvider>

@@ -1,7 +1,6 @@
 "use client";
 import { useState, useRef } from "react";
 import { Heart, MessageCircle, Share2 } from "lucide-react";
-import BottomNav from "@/components/BottomNav";
 import { toast } from "sonner";
 
 export default function ReelsPage() {
@@ -113,7 +112,6 @@ export default function ReelsPage() {
         ))}
       </div>
 
-      <BottomNav />
     </div>
   );
 }
