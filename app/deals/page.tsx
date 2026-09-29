@@ -1,5 +1,4 @@
 "use client";
-import BottomNav from "@/components/BottomNav";
 
 export default function DealsPage() {
   return (
@@ -19,7 +18,6 @@ export default function DealsPage() {
         </div>
       </div>
 
-      <BottomNav />
     </div>
   );
 }

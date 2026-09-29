@@ -1,6 +1,5 @@
 "use client";
 
-import BottomNav from "@/components/BottomNav";
 
 export default function EventosPage() {
   return (
@@ -21,7 +20,6 @@ export default function EventosPage() {
         <p className="text-sm text-zinc-500 mt-8">Próximamente...</p>
       </div>
 
-      <BottomNav />
     </div>
   );
 }

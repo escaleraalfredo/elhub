@@ -1,7 +1,6 @@
 "use client";
 import { useState } from "react";
 import { Heart, MessageCircle, Share2, Plus, Smile } from "lucide-react";
-import BottomNav from "@/components/BottomNav";
 import { toast } from "sonner";
 import { useGamification } from "@/lib/gamificationContext";
 
@@ -185,7 +184,6 @@ export default function MemesPage() {
         <Plus className="w-8 h-8 text-white" />
       </button>
 
-      <BottomNav />
     </div>
   );
 }

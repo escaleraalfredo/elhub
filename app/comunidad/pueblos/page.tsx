@@ -3,7 +3,6 @@
 import { useState } from "react";
 import { Users } from "lucide-react";
 import { useGamification } from "@/lib/gamificationContext";
-import BottomNav from "@/components/BottomNav";
 import { toast } from "sonner";
 
 export default function PueblosPage() {
@@ -93,7 +92,6 @@ export default function PueblosPage() {
         ))}
       </div>
 
-      <BottomNav />
     </div>
   );
 }
