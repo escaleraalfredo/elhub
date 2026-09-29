@@ -6,7 +6,6 @@ import { PageShell, StickyBar, Tabs } from "@/components/ui/Page";
 
 const TABS = [
   { label: "Temas", href: "/comunidad/temas" },
-  { label: "Memes", href: "/comunidad/memes" },
   { label: "Pueblos", href: "/comunidad/pueblos" },
   { label: "Encuestas", href: "/comunidad/encuestas" },
 ];

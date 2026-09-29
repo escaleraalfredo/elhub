@@ -4,8 +4,10 @@ import { User, Bell, Shield, Palette, Moon, Sun, Volume2, Eye, LogOut, Globe } f
 import { useState, useEffect } from "react";
 import { toast } from "sonner";
 import { PageContent, PageHeader, PageShell } from "@/components/ui/Page";
+import { usePoints } from "@/lib/points";
 
 export default function SettingsPage() {
+  const { total, level } = usePoints();
   const [isDarkMode, setIsDarkMode] = useState(true);
   const [notificationsEnabled, setNotificationsEnabled] = useState(true);
   const [soundEnabled, setSoundEnabled] = useState(true);
@@ -56,7 +58,7 @@ export default function SettingsPage() {
               <div className="w-16 h-16 bg-zinc-700 rounded-2xl" />
               <div>
                 <p className="font-semibold text-lg">@tuusuario</p>
-                <p className="text-zinc-500 text-sm">Nivel 3 • 1,255 pts</p>
+                <p className="text-zinc-500 text-sm">Nivel {level.level} · {level.title} · {total.toLocaleString()} pts</p>
               </div>
             </div>
           </div>
@@ -165,7 +167,7 @@ export default function SettingsPage() {
               <Eye className="w-5 h-5 text-zinc-400" />
               <div className="flex-1">
                 <p className="font-medium">Ahorro de datos</p>
-                <p className="text-xs text-zinc-500">Optimiza el uso en Reels</p>
+                <p className="text-xs text-zinc-500">Carga menos imágenes con datos móviles</p>
               </div>
             </button>
           </div>
