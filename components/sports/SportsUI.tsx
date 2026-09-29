@@ -4,8 +4,9 @@
 "use client";
 
 import TeamLogo from "./TeamLogo";
+import { GameFooter } from "./GameInteractions";
 import { Card } from "@/components/ui/Page";
-import type { Game, GameSide, StandingsGroup } from "@/lib/sports/types";
+import type { Bracket, BracketSeries, BracketSide, Game, GameSide, StandingsGroup } from "@/lib/sports/types";
 import { cn } from "@/lib/utils";
 
 export { TeamLogo };
@@ -43,24 +44,32 @@ function TeamLine({ side, game }: { side: GameSide; game: Game }) {
   );
 }
 
-export function ScoreCard({ game }: { game: Game }) {
+export function ScoreCard({ game, onOpen }: { game: Game; onOpen?: () => void }) {
   const o = game.odds;
+  const right = game.detail ?? game.broadcast;
   return (
-    <Card className={cn(game.state === "in" && "border-red-500/40")}>
+    <Card className={cn(game.state === "in" && "border-red-500/40")} onClick={onOpen}>
       <div className="flex items-center justify-between px-4 pt-3 pb-1 text-xs">
         <StatusPill game={game} />
-        {game.broadcast && <span className="text-zinc-500 truncate ml-3">{game.broadcast}</span>}
+        {right && <span className="text-zinc-500 truncate ml-3">{right}</span>}
       </div>
       <TeamLine side={game.away} game={game} />
       <TeamLine side={game.home} game={game} />
-      {(o || game.venue) && (
-        <div className="flex items-center justify-between gap-3 px-4 py-2.5 border-t border-zinc-800 text-xs text-zinc-400">
-          <span className="truncate">
-            {o?.spread?.home ? `Línea: ${game.home.team.abbr} ${o.spread.home}` : o?.details ?? game.venue}
-          </span>
-          {o?.total && <span className="shrink-0">O/U {o.total}</span>}
-        </div>
-      )}
+      {(() => {
+        const line = o?.spread?.home
+          ? `Línea: ${game.home.team.abbr} ${o.spread.home}`
+          : o?.moneyline?.away && o.moneyline.home
+            ? `Dinero: ${game.away.team.abbr} ${o.moneyline.away} · ${game.home.team.abbr} ${o.moneyline.home}`
+            : o?.details ?? game.venue;
+        if (!line && !o?.total) return null;
+        return (
+          <div className="flex items-center justify-between gap-3 px-4 py-2.5 border-t border-zinc-800 text-xs text-zinc-400">
+            <span className="truncate">{line}</span>
+            {o?.total && <span className="shrink-0">O/U {o.total}</span>}
+          </div>
+        );
+      })()}
+      <GameFooter game={game} />
     </Card>
   );
 }
@@ -117,7 +126,7 @@ function LineBox({ top, bottom }: { top?: string; bottom?: string }) {
   );
 }
 
-export function OddsCard({ game }: { game: Game }) {
+export function OddsCard({ game, onOpen }: { game: Game; onOpen?: () => void }) {
   const o = game.odds;
   const cols = "grid grid-cols-[1fr_4rem_4.5rem_4rem] gap-2 items-center";
   const row = (side: GameSide, which: "home" | "away") => (
@@ -132,9 +141,10 @@ export function OddsCard({ game }: { game: Game }) {
     </div>
   );
   return (
-    <Card>
-      <div className="px-4 pt-3 text-xs">
+    <Card onClick={onOpen}>
+      <div className="flex items-center justify-between px-4 pt-3 text-xs">
         <StatusPill game={game} />
+        {game.detail && <span className="text-zinc-500 truncate ml-3">{game.detail}</span>}
       </div>
       <div className={cn(cols, "px-4 pt-2 pb-1 text-[10px] font-bold uppercase tracking-wide text-zinc-500")}>
         <span />
@@ -146,5 +156,68 @@ export function OddsCard({ game }: { game: Game }) {
       {row(game.home, "home")}
       <div className="px-4 pt-1 pb-3 text-[11px] text-zinc-500">{o?.provider ? `Fuente: ${o.provider}` : " "}</div>
     </Card>
+  );
+}
+
+function BracketTeam({ side }: { side: BracketSide }) {
+  const lost = side.winner === false && side.wins !== undefined && side.team;
+  return (
+    <div className={cn("flex items-center gap-2 px-3 py-1.5 min-w-0", lost && "opacity-50")}>
+      <span className="w-3 text-[10px] text-zinc-500 tabular-nums">{side.seed ?? ""}</span>
+      {side.team ? (
+        <TeamLogo team={side.team} size={20} />
+      ) : (
+        <span className="w-5 h-5 rounded-full border border-dashed border-zinc-700 shrink-0" />
+      )}
+      <span className={cn("flex-1 text-[13px] truncate", side.winner ? "font-bold text-white" : "text-zinc-200")}>
+        {side.team ? side.team.abbr : "Por definir"}
+      </span>
+      {side.wins !== undefined && <span className="text-sm font-bold tabular-nums">{side.wins}</span>}
+    </div>
+  );
+}
+
+function SeriesCard({ s }: { s: BracketSeries }) {
+  return (
+    <div className="rounded-2xl bg-zinc-900 border border-zinc-800 py-1">
+      <BracketTeam side={s.top} />
+      <BracketTeam side={s.bottom} />
+      {s.summary && <p className="px-3 pb-1 text-[10px] text-zinc-500 truncate">{s.summary}</p>}
+    </div>
+  );
+}
+
+export function BracketView({ bracket }: { bracket: Bracket }) {
+  return (
+    <div className="space-y-5">
+      {bracket.rounds.map((round) => {
+        const al = round.series.filter((s) => s.league === "AL");
+        const nl = round.series.filter((s) => s.league === "NL");
+        const neutral = round.series.filter((s) => !s.league);
+        return (
+          <section key={round.id}>
+            <h3 className="px-1 mb-2 text-sm font-bold text-zinc-300">{round.name}</h3>
+            {round.series.length === 0 ? (
+              <p className="px-1 text-xs text-zinc-500">Por comenzar</p>
+            ) : neutral.length ? (
+              <div className="max-w-[12rem] mx-auto space-y-2">
+                {neutral.map((s) => <SeriesCard key={s.id} s={s} />)}
+              </div>
+            ) : (
+              <div className="grid grid-cols-2 gap-2">
+                <div className="space-y-2">
+                  <p className="text-[10px] font-bold uppercase tracking-wide text-zinc-500 text-center">Liga Americana</p>
+                  {al.map((s) => <SeriesCard key={s.id} s={s} />)}
+                </div>
+                <div className="space-y-2">
+                  <p className="text-[10px] font-bold uppercase tracking-wide text-zinc-500 text-center">Liga Nacional</p>
+                  {nl.map((s) => <SeriesCard key={s.id} s={s} />)}
+                </div>
+              </div>
+            )}
+          </section>
+        );
+      })}
+    </div>
   );
 }

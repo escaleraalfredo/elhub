@@ -1,16 +1,39 @@
 // app/deportes/page.tsx
 "use client";
 
-import { useMemo, useState } from "react";
+import { Fragment, useEffect, useMemo, useState } from "react";
 import { RefreshCw } from "lucide-react";
 import { EmptyState, Notice, PageContent, PageShell, Skeleton, StickyBar, Tabs } from "@/components/ui/Page";
-import { OddsCard, ScoreCard, StandingsTable } from "@/components/sports/SportsUI";
+import { BracketView, OddsCard, ScoreCard, StandingsTable } from "@/components/sports/SportsUI";
+import { GameHeader } from "@/components/sports/GameInteractions";
+import { CommentsSheet } from "@/components/comments/Comments";
+import Sponsored from "@/components/ui/Sponsored";
+import { useGameInteractions } from "@/lib/sports/interactions";
+import { award } from "@/lib/points";
 import { LEAGUES, PR_TZ, dateKey, keyToDate, leagueById, shiftKey } from "@/lib/sports/leagues";
-import type { LeagueData, LeagueId } from "@/lib/sports/types";
+import type { Game, LeagueData, LeagueId } from "@/lib/sports/types";
 import { useFetchJson } from "@/lib/useFetchJson";
 import { cn } from "@/lib/utils";
 
-type View = "scores" | "standings" | "odds";
+type View = "scores" | "standings" | "playoffs" | "odds";
+
+function viewsFor(league: LeagueId): { label: string; value: View }[] {
+  if (league === "ufc") return [{ label: "Peleas", value: "scores" }, { label: "Líneas", value: "odds" }];
+  const base: { label: string; value: View }[] = [
+    { label: "Marcadores", value: "scores" },
+    { label: "Posiciones", value: "standings" },
+  ];
+  if (league === "mlb") base.push({ label: "Playoffs", value: "playoffs" });
+  base.push({ label: "Líneas", value: "odds" });
+  return base;
+}
+
+/** UFC: group fights under their event. */
+function byGroup(games: Game[]) {
+  const m = new Map<string, Game[]>();
+  games.forEach((g) => m.set(g.group ?? "", [...(m.get(g.group ?? "") ?? []), g]));
+  return [...m.entries()];
+}
 
 function DateStrip({ value, onChange, today }: { value: string; onChange: (k: string) => void; today: string }) {
   const days = useMemo(() => Array.from({ length: 9 }, (_, i) => shiftKey(today, i - 4)), [today]);
@@ -59,7 +82,30 @@ export default function DeportesPage() {
   if ((live ? 30_000 : 120_000) !== interval) setIntervalMs(live ? 30_000 : 120_000);
 
   const meta = leagueById(league)!;
+  const views = viewsFor(league);
+  const activeView: View = views.some((v) => v.value === view) ? view : "scores";
+  const showDates = league !== "ufc" && (activeView === "scores" || activeView === "odds");
   const oddsGames = current?.games.filter((g) => g.odds && g.state !== "post") ?? [];
+  const [openGame, setOpenGame] = useState<Game | null>(null);
+
+  // Pay out correct predictions once games are final.
+  const { picks } = useGameInteractions();
+  useEffect(() => {
+    current?.games.forEach((g) => {
+      const pick = picks[g.id];
+      if (!pick || g.state !== "post") return;
+      const won = pick === "home" ? g.home.winner : g.away.winner;
+      if (won) award("correct_pick", { key: g.id });
+    });
+  }, [current, picks]);
+
+  const scoreList = (games: Game[]) =>
+    games.map((g, i) => (
+      <Fragment key={g.id}>
+        <ScoreCard game={g} onOpen={() => setOpenGame(g)} />
+        {i === 2 && <Sponsored placement="deportes" />}
+      </Fragment>
+    ));
 
   return (
     <PageShell>
@@ -81,16 +127,8 @@ export default function DeportesPage() {
             </button>
           ))}
         </div>
-        <Tabs
-          active={view}
-          onChange={(v) => setView(v as View)}
-          tabs={[
-            { label: "Marcadores", value: "scores" },
-            { label: "Posiciones", value: "standings" },
-            { label: "Líneas", value: "odds" },
-          ]}
-        />
-        {view !== "standings" && <DateStrip value={date} onChange={setDate} today={today} />}
+        <Tabs active={activeView} onChange={(v) => setView(v as View)} tabs={views} />
+        {showDates && <DateStrip value={date} onChange={setDate} today={today} />}
       </StickyBar>
 
       <PageContent>
@@ -98,7 +136,7 @@ export default function DeportesPage() {
           <div>
             <h1 className="text-lg font-bold text-white leading-tight">{meta.fullName}</h1>
             <p className="text-xs text-zinc-500">
-              {view !== "standings" &&
+              {showDates &&
                 `${keyToDate(date).toLocaleDateString("es-PR", { weekday: "long", day: "numeric", month: "long", timeZone: PR_TZ })} · `}
               {current?.source === "espn" ? "Datos: ESPN" : current?.source === "sample" ? "Datos de ejemplo" : " "}
               {live && <span className="text-red-500 font-semibold"> · Actualizando en vivo</span>}
@@ -119,18 +157,47 @@ export default function DeportesPage() {
           </div>
         )}
 
-        {current && view === "scores" &&
+        {current && activeView === "scores" &&
           (current.games.length === 0 ? (
-            <EmptyState icon={meta.emoji} title="No hay juegos este día" subtitle="Prueba otra fecha en la barra de arriba." />
+            <EmptyState
+              icon={meta.emoji}
+              title={league === "ufc" ? "No hay carteleras cercanas" : "No hay juegos este día"}
+              subtitle={league === "ufc" ? undefined : "Prueba otra fecha en la barra de arriba."}
+            />
+          ) : league === "ufc" ? (
+            byGroup(current.games).map(([group, games]) => (
+              <section key={group} className="space-y-3">
+                <h2 className="px-1 text-sm font-bold text-zinc-300">
+                  {group}
+                  <span className="block text-xs font-normal text-zinc-500">
+                    {new Date(games[0].startTime).toLocaleDateString("es-PR", { weekday: "long", day: "numeric", month: "long", timeZone: PR_TZ })}
+                  </span>
+                </h2>
+                {scoreList(games)}
+              </section>
+            ))
           ) : (
             <div className="space-y-3">
-              {current.games.map((g) => (
-                <ScoreCard key={g.id} game={g} />
-              ))}
+              <p className="px-1 text-xs text-zinc-500">Toca un juego para pronosticar, reaccionar y comentar.</p>
+              {scoreList(current.games)}
             </div>
           ))}
 
-        {current && view === "standings" &&
+        {current && activeView === "playoffs" &&
+          (current.bracket ? (
+            <>
+              {current.bracket.mode === "projected" && (
+                <Notice>
+                  Proyección según las posiciones actuales (simplificada: los 6 mejores récords de cada liga). Se actualiza sola cuando empiecen los playoffs.
+                </Notice>
+              )}
+              <BracketView bracket={current.bracket} />
+            </>
+          ) : (
+            <EmptyState icon="🏆" title="Bracket no disponible" subtitle="Vuelve cuando se acerquen los playoffs." />
+          ))}
+
+        {current && activeView === "standings" &&
           (current.standings.length === 0 ? (
             <EmptyState icon="📊" title="Posiciones no disponibles" />
           ) : (
@@ -141,23 +208,31 @@ export default function DeportesPage() {
             </div>
           ))}
 
-        {current && view === "odds" && (
+        {current && activeView === "odds" && (
           <>
             {oddsGames.length === 0 ? (
               <EmptyState icon="🎲" title="No hay líneas para este día" subtitle="Las líneas aparecen para juegos por comenzar o en vivo." />
             ) : (
               <div className="space-y-3">
                 {oddsGames.map((g) => (
-                  <OddsCard key={g.id} game={g} />
+                  <OddsCard key={g.id} game={g} onOpen={() => setOpenGame(g)} />
                 ))}
               </div>
             )}
             <p className="text-center text-[11px] text-zinc-500 px-6">
-              Líneas solo como referencia. ElHub no acepta apuestas. 21+ · Juega responsablemente.
+              Líneas solo como referencia. ElHub no acepta apuestas. Solo para mayores de edad · Juega responsablemente.
             </p>
           </>
         )}
       </PageContent>
+
+      <CommentsSheet
+        open={openGame !== null}
+        onClose={() => setOpenGame(null)}
+        threadId={`game:${openGame?.id ?? ""}`}
+        title={meta.name}
+        header={openGame && <GameHeader game={current?.games.find((g) => g.id === openGame.id) ?? openGame} />}
+      />
     </PageShell>
   );
 }
