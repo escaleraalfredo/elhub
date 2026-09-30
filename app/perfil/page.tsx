@@ -114,7 +114,7 @@ export default function PerfilPage() {
               { label: "Ranking", value: `#${me.rank}`, sub: "semanal" },
               { label: "Racha", value: `${streak}`, sub: streak === 1 ? "día" : "días", flame: true },
             ].map((s) => (
-              <div key={s.label} className="rounded-2xl bg-zinc-950 border border-zinc-800 py-3">
+              <div key={s.label} className="rounded-2xl bg-zinc-800/60 py-3">
                 <p className="text-[11px] text-zinc-500">{s.label}</p>
                 <p className="text-xl font-bold tabular-nums flex items-center justify-center gap-1">
                   {s.flame && <Flame className="w-4 h-4 text-orange-400" />}
@@ -233,7 +233,7 @@ export default function PerfilPage() {
                   </div>
                   <div className="mt-2 h-1.5 bg-zinc-800 rounded-full overflow-hidden">
                     <div
-                      className={cn("h-full", done ? "bg-brand" : "bg-zinc-500")}
+                      className={cn("h-full", done ? "bg-accent-gradient" : "bg-zinc-500")}
                       style={{ width: `${Math.min(100, (b.value / b.goal) * 100)}%` }}
                     />
                   </div>

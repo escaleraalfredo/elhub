@@ -3,20 +3,19 @@
 
 import { Fragment, useMemo, useRef, useState } from "react";
 import {
-  CalendarDays, CalendarPlus, Check, ExternalLink, LocateFixed, MapPin, Search, Star, X,
+  CalendarDays, CalendarPlus, ExternalLink, LocateFixed, MapPin, Search, Star, X,
 } from "lucide-react";
 import { toast } from "sonner";
-import { Card, EmptyState, Notice, Skeleton } from "@/components/ui/Page";
+import { EmptyState, Notice, Skeleton } from "@/components/ui/Page";
 import SafeImg from "@/components/ui/SafeImg";
 import Sponsored from "@/components/ui/Sponsored";
-import ShareButton from "@/components/ui/ShareButton";
+import EventPoster, { catMeta, eventPrice, eventTime } from "./EventPoster";
 import { useProfile } from "@/lib/profile";
 import { REGION_NAMES, WEATHER_ZONES, regionOf, type Region } from "@/lib/utilities/municipios";
-import { CommentButton, CommentsSheet } from "@/components/comments/Comments";
+import { CommentsSheet } from "@/components/comments/Comments";
 import { EVENT_CATEGORIES, type EventCategory, type EventItem, type EventsResponse } from "@/lib/events/types";
-import { downloadIcs, toggleEvent, useEventLists } from "@/lib/events/store";
+import { downloadIcs, useEventLists } from "@/lib/events/store";
 import { useFetchJson } from "@/lib/useFetchJson";
-import { award } from "@/lib/points";
 import { cn } from "@/lib/utils";
 
 const TZ = "America/Puerto_Rico";
@@ -70,85 +69,8 @@ function dayLabel(key: string, today: string) {
   return long.charAt(0).toUpperCase() + long.slice(1);
 }
 
-function price(e: EventItem) {
-  if (e.free) return "Gratis";
-  if (e.priceMin === undefined) return null;
-  return e.priceMax && e.priceMax !== e.priceMin ? `$${Math.round(e.priceMin)} – $${Math.round(e.priceMax)}` : `$${Math.round(e.priceMin)}`;
-}
-
-const time = (e: EventItem) =>
-  new Date(e.start).toLocaleTimeString("es-PR", { hour: "numeric", minute: "2-digit", timeZone: TZ });
-
-const catMeta = (id: EventCategory) => EVENT_CATEGORIES.find((c) => c.id === id)!;
-
-function EventCard({ e, onOpen }: { e: EventItem; onOpen: () => void }) {
-  const lists = useEventLists();
-  const saved = !!lists.saved[e.id];
-  const going = !!lists.going[e.id];
-  const d = keyDate(e.day);
-  const p = price(e);
-
-  return (
-    <Card>
-      <button onClick={onOpen} className="w-full text-left flex gap-3 p-3">
-        <div className="w-14 shrink-0 rounded-2xl bg-zinc-950 border border-zinc-800 flex flex-col items-center justify-center py-2">
-          <span className="text-[10px] font-bold uppercase text-brand">
-            {d.toLocaleDateString("es-PR", { month: "short", timeZone: TZ }).replace(".", "")}
-          </span>
-          <span className="text-2xl font-bold leading-none tabular-nums">{d.getUTCDate()}</span>
-          <span className="text-[10px] text-zinc-500 uppercase">
-            {d.toLocaleDateString("es-PR", { weekday: "short", timeZone: TZ }).replace(".", "")}
-          </span>
-        </div>
-        <div className="flex-1 min-w-0">
-          <div className="flex items-center gap-2 text-[11px] text-zinc-400">
-            <span>{catMeta(e.category).emoji} {catMeta(e.category).label}</span>
-            <span>· {e.approximate ? "fecha de referencia" : time(e)}</span>
-          </div>
-          <h3 className="mt-0.5 font-semibold text-[15px] leading-snug text-ink line-clamp-2">{e.title}</h3>
-          <p className="mt-1 flex items-center gap-1 text-xs text-zinc-400 truncate">
-            <MapPin className="w-3.5 h-3.5 shrink-0" />
-            <span className="truncate">{e.venue} · {e.city}</span>
-          </p>
-          {p && <p className={cn("mt-1 text-xs font-semibold", e.free ? "text-emerald-400" : "text-zinc-200")}>{p}</p>}
-        </div>
-        <SafeImg src={e.image} alt="" className="w-16 h-16 rounded-2xl object-cover shrink-0 self-center" />
-      </button>
-      <div className="flex items-center gap-1 px-2 pb-2 text-xs font-semibold">
-        <button
-          onClick={() => {
-            if (toggleEvent("saved", e)) {
-              award("save_event", { key: e.id });
-              toast.success("Guardado en tus eventos");
-            }
-          }}
-          className={cn("flex items-center gap-1.5 px-3 py-2 rounded-full", saved ? "text-yellow-400 bg-yellow-400/10" : "text-zinc-400 hover:bg-zinc-800")}
-        >
-          <Star className={cn("w-4 h-4", saved && "fill-current")} /> {saved ? "Guardado" : "Guardar"}
-        </button>
-        <button
-          onClick={() => {
-            if (toggleEvent("going", e)) award("going_event", { key: e.id });
-          }}
-          className={cn("flex items-center gap-1.5 px-3 py-2 rounded-full", going ? "text-emerald-400 bg-emerald-400/10" : "text-zinc-400 hover:bg-zinc-800")}
-        >
-          <Check className="w-4 h-4" /> Voy
-        </button>
-        <button onClick={() => downloadIcs(e)} aria-label="Añadir al calendario" className="p-2 rounded-full text-zinc-400 hover:bg-zinc-800">
-          <CalendarPlus className="w-4 h-4" />
-        </button>
-        <ShareButton
-          title={e.title}
-          text={`${e.venue} · ${e.city}`}
-          url={e.url ?? "/eventos"}
-          pointsKey={`event:${e.id}`}
-          className="p-2 rounded-full hover:bg-zinc-800 [&_svg]:w-4 [&_svg]:h-4"
-        />
-        <CommentButton threadId={`event:${e.id}`} onClick={onOpen} className="ml-auto px-2 [&_svg]:w-4 [&_svg]:h-4 [&_span]:text-xs" />
-      </div>
-    </Card>
-  );
-}
+const price = eventPrice;
+const time = eventTime;
 
 function EventDetails({ e }: { e: EventItem }) {
   const p = price(e);
@@ -177,7 +99,7 @@ function EventDetails({ e }: { e: EventItem }) {
             href={e.url}
             target="_blank"
             rel="noopener noreferrer"
-            className="flex-1 flex items-center justify-center gap-2 bg-brand hover:brightness-110 text-white rounded-2xl py-3 font-semibold text-sm"
+            className="flex-1 flex items-center justify-center gap-2 bg-accent-gradient text-white rounded-2xl py-3 font-semibold text-sm"
           >
             Boletos <ExternalLink className="w-4 h-4" />
           </a>
@@ -271,7 +193,7 @@ export default function Eventos() {
   const chip = (active: boolean) =>
     cn(
       "shrink-0 px-3.5 py-1.5 rounded-full text-sm font-medium whitespace-nowrap transition-colors",
-      active ? "bg-brand text-white" : "bg-zinc-900 text-zinc-300 border border-zinc-800 hover:bg-zinc-800"
+      active ? "bg-ink text-zinc-950" : "bg-zinc-900 text-zinc-300 hover:bg-zinc-800"
     );
 
   let shown = 0;
@@ -279,7 +201,7 @@ export default function Eventos() {
   return (
     <div className="space-y-4">
       {/* Search */}
-      <div className="flex items-center gap-2 bg-zinc-900 border border-zinc-800 rounded-2xl px-3.5 py-2.5 focus-within:border-zinc-600">
+      <div className="flex items-center gap-2 bg-zinc-900 rounded-2xl px-3.5 py-2.5">
         <Search className="w-4 h-4 text-zinc-500" />
         <input
           value={query}
@@ -343,7 +265,7 @@ export default function Eventos() {
 
       {/* Where / extras */}
       <div className="-mx-4 flex items-center gap-2 overflow-x-auto scrollbar-hide px-4">
-        <label className="shrink-0 flex items-center gap-1.5 bg-zinc-900 border border-zinc-800 rounded-full pl-3 pr-2 py-1.5 text-sm">
+        <label className="shrink-0 flex items-center gap-1.5 bg-zinc-900 rounded-full pl-3 pr-2 py-1.5 text-sm">
           <MapPin className="w-4 h-4 text-zinc-500" />
           <select value={city} onChange={(e) => setCity(e.target.value)} className="bg-transparent focus:outline-none text-zinc-200">
             {cities.map((c) => (
@@ -391,7 +313,7 @@ export default function Eventos() {
             shown++;
             return (
               <Fragment key={e.id}>
-                <EventCard e={e} onOpen={() => setOpen(e)} />
+                <EventPoster e={e} onOpen={() => setOpen(e)} />
                 {shown === 3 && <Sponsored placement="eventos" />}
               </Fragment>
             );

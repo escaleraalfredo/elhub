@@ -62,7 +62,7 @@ function DateStrip({ value, onChange, today }: { value: string; onChange: (k: st
             <span className="text-base font-bold tabular-nums leading-tight">
               {d.toLocaleDateString("es-PR", { day: "numeric", timeZone: PR_TZ })}
             </span>
-            {active && <span className="absolute bottom-0 left-2 right-2 h-0.5 rounded-full bg-brand" />}
+            {active && <span className="absolute bottom-0 left-2 right-2 h-0.5 rounded-full bg-accent-gradient" />}
           </button>
         );
       })}
@@ -125,8 +125,8 @@ export default function DeportesPage() {
               className={cn(
                 "shrink-0 flex items-center gap-1.5 px-3.5 py-1.5 rounded-full text-sm font-semibold transition-colors",
                 l.id === league
-                  ? "bg-brand text-white"
-                  : "bg-zinc-900 text-zinc-300 border border-zinc-800 hover:bg-zinc-800"
+                  ? "bg-ink text-zinc-950"
+                  : "bg-zinc-900 text-zinc-300 hover:bg-zinc-800"
               )}
             >
               <span>{l.emoji}</span>

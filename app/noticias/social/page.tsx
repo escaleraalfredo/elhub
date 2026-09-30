@@ -85,7 +85,7 @@ export default function XFeedPage() {
             href={`https://x.com/${a.username}`}
             target="_blank"
             rel="noopener noreferrer"
-            className="shrink-0 flex items-center gap-2 bg-zinc-900 border border-zinc-800 rounded-full pl-1 pr-3 py-1 text-sm text-zinc-200 hover:bg-zinc-800"
+            className="shrink-0 flex items-center gap-2 bg-zinc-900 rounded-full pl-1 pr-3 py-1 text-sm text-zinc-200 hover:bg-zinc-800"
           >
             <Avatar name={a.username} size={24} />
             {a.name}

@@ -40,7 +40,7 @@ export default function ClimaPage() {
           <select
             value={activeZone}
             onChange={(e) => setZone(e.target.value)}
-            className="bg-zinc-900 border border-zinc-800 rounded-full px-3 py-1.5 focus:outline-none"
+            className="bg-zinc-900 rounded-full px-3 py-1.5 focus:outline-none"
           >
             {Object.keys(WEATHER_ZONES).map((z) => (
               <option key={z} value={z}>{z}</option>

@@ -15,7 +15,7 @@ export function PageShell({
   children: React.ReactNode;
   className?: string;
 }) {
-  return <div className={cn("min-h-screen bg-dark-bg pb-28", className)}>{children}</div>;
+  return <div className={cn("min-h-screen bg-zinc-950 pb-32", className)}>{children}</div>;
 }
 
 export function PageContent({
@@ -39,7 +39,7 @@ export function StickyBar({
   return (
     <div
       className={cn(
-        "sticky top-[3.625rem] z-40 bg-zinc-950/95 backdrop-blur border-b border-zinc-800",
+        "sticky top-[calc(3.5rem+env(safe-area-inset-top))] z-40 glass",
         className
       )}
     >
@@ -74,7 +74,7 @@ export function PageHeader({
           </button>
         )}
         <div className="flex-1 min-w-0">
-          <h1 className="text-lg font-bold text-ink leading-tight truncate">{title}</h1>
+          <h1 className="text-[22px] font-extrabold text-ink leading-tight truncate">{title}</h1>
           {subtitle && <p className="text-xs text-zinc-500 truncate">{subtitle}</p>}
         </div>
         {right}
@@ -105,7 +105,7 @@ export function Tabs({
           isActive ? "text-ink" : "text-zinc-500 hover:text-zinc-300"
         );
         const bar = isActive && (
-          <span className="absolute bottom-0 left-3 right-3 h-0.5 rounded-full bg-brand" />
+          <span className="absolute bottom-0 left-1/2 -translate-x-1/2 w-8 h-[3px] rounded-full bg-accent-gradient" />
         );
         return tab.href ? (
           <Link key={key} href={tab.href} className={cls}>
@@ -146,8 +146,8 @@ export function Chips<T extends string>({
           className={cn(
             "shrink-0 px-4 py-1.5 rounded-full text-sm font-medium whitespace-nowrap transition-colors",
             opt === active
-              ? "bg-brand text-white"
-              : "bg-zinc-900 text-zinc-300 border border-zinc-800 hover:bg-zinc-800"
+              ? "bg-ink text-zinc-950"
+              : "bg-zinc-900 text-zinc-300 hover:bg-zinc-800"
           )}
         >
           {render ? render(opt) : opt}
@@ -170,8 +170,8 @@ export function Card({
     <div
       onClick={onClick}
       className={cn(
-        "bg-zinc-900 rounded-3xl border border-zinc-800 overflow-hidden",
-        onClick && "cursor-pointer hover:border-zinc-700 transition-colors",
+        "bg-zinc-900 rounded-[24px] overflow-hidden",
+        onClick && "cursor-pointer pressable",
         className
       )}
     >

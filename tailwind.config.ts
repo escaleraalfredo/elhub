@@ -11,6 +11,7 @@ const config: Config = {
         brand: "var(--brand)",
         coral: "var(--coral)",
         palm: "var(--palm)",
+        ocean: "var(--ocean)",
         flag: { red: "var(--flag-red)", blue: "var(--flag-blue)" },
       },
     },

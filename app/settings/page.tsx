@@ -92,7 +92,7 @@ export default function SettingsPage() {
                 onClick={() => updateProfile({ lang: l })}
                 className={cn(
                   "rounded-2xl border py-3 text-sm font-semibold",
-                  profile.lang === l ? "border-brand bg-brand text-white" : "border-zinc-800 text-zinc-300"
+                  profile.lang === l ? "border-ink bg-ink text-zinc-950" : "border-zinc-800 text-zinc-300"
                 )}
               >
                 {l === "es" ? "Español" : "English"}

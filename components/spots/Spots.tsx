@@ -86,7 +86,7 @@ export default function Spots({ activeCategory, viewMode, setShowRatingModal }: 
 
   if (viewMode === "map") {
     return (
-      <div className="bg-zinc-900 border border-zinc-800 rounded-3xl h-[560px] flex flex-col items-center justify-center text-center p-8">
+      <div className="bg-zinc-900 rounded-3xl h-[560px] flex flex-col items-center justify-center text-center p-8">
         <Map className="w-16 h-16 text-zinc-500 mb-6" />
         <h3 className="text-ink text-2xl font-bold">Mapa de Rankings 🇵🇷</h3>
         <p className="text-zinc-400 mt-2">Próximamente: mapa interactivo con pines</p>
@@ -99,7 +99,7 @@ export default function Spots({ activeCategory, viewMode, setShowRatingModal }: 
       {filteredSpots.map((spot) => (
         <div 
           key={spot.id} 
-          className="bg-zinc-900 border border-zinc-800 rounded-3xl overflow-hidden"
+          className="bg-zinc-900 rounded-3xl overflow-hidden"
         >
           <div className="relative">
             <img 
@@ -126,7 +126,7 @@ export default function Spots({ activeCategory, viewMode, setShowRatingModal }: 
 
               <button
                 onClick={() => setShowRatingModal(spot.id)}
-                className="bg-brand hover:brightness-110 text-white text-sm font-semibold px-5 py-2.5 rounded-full transition-all active:scale-95"
+                className="bg-accent-gradient text-white text-sm font-semibold px-5 py-2.5 rounded-full transition-all active:scale-95"
               >
                 Calificar
               </button>
