@@ -34,10 +34,10 @@ function Post({ post, onComments }: { post: XPost; onComments: () => void }) {
       <Avatar name={post.author.username || post.author.name} src={post.author.avatar} size={40} />
       <div className="flex-1 min-w-0">
         <div className="flex items-center gap-1 text-sm min-w-0">
-          <span className="font-semibold text-white truncate">{post.author.name}</span>
+          <span className="font-semibold text-ink truncate">{post.author.name}</span>
           {post.author.verified && <BadgeCheck className="w-4 h-4 text-sky-400 shrink-0" />}
           <span className="text-zinc-500 truncate">@{post.author.username} · {timeAgo(post.createdAt)}</span>
-          <a href={post.url} target="_blank" rel="noopener noreferrer" className="ml-auto text-zinc-500 hover:text-white shrink-0" aria-label="Ver en X">
+          <a href={post.url} target="_blank" rel="noopener noreferrer" className="ml-auto text-zinc-500 hover:text-ink shrink-0" aria-label="Ver en X">
             <ExternalLink className="w-4 h-4" />
           </a>
         </div>
@@ -96,7 +96,7 @@ export default function XFeedPage() {
       <PageContent>
         <div className="flex items-center justify-between px-1 text-xs text-zinc-500">
           <span>Lo que se habla de Puerto Rico en X</span>
-          <button onClick={refresh} className="flex items-center gap-1 hover:text-white">
+          <button onClick={refresh} className="flex items-center gap-1 hover:text-ink">
             <RefreshCw className={cn("w-3.5 h-3.5", loading && "animate-spin")} /> Actualizar
           </button>
         </div>

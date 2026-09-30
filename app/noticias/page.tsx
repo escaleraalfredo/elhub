@@ -2,13 +2,16 @@
 "use client";
 
 import { Fragment, useMemo, useState } from "react";
-import { Bookmark, Heart, RefreshCw, Share2 } from "lucide-react";
+import { Bookmark, Heart, MapPin, RefreshCw } from "lucide-react";
 import { toast } from "sonner";
 import { Card, Chips, EmptyState, Notice, PageContent, Skeleton } from "@/components/ui/Page";
 import SafeImg from "@/components/ui/SafeImg";
 import Sponsored from "@/components/ui/Sponsored";
+import ShareButton from "@/components/ui/ShareButton";
+import { SECTIONS } from "@/lib/news/classify";
+import { PUEBLOS, useProfile } from "@/lib/profile";
 import { CommentButton, CommentsSheet } from "@/components/comments/Comments";
-import { NEWS_SOURCES, sourceById } from "@/lib/news/sources";
+import { DIASPORA_FEED, NEWS_SOURCES, sourceById } from "@/lib/news/sources";
 import type { NewsItem, NewsResponse } from "@/lib/news/types";
 import { useFetchJson } from "@/lib/useFetchJson";
 import { award } from "@/lib/points";
@@ -44,28 +47,14 @@ function Actions({
   onSave: () => void;
   onComments: () => void;
 }) {
-  const share = async () => {
-    try {
-      if (navigator.share) await navigator.share({ title: item.title, url: item.link });
-      else {
-        await navigator.clipboard.writeText(item.link);
-        toast.success("Enlace copiado");
-      }
-      award("share", { key: `news:${item.id}` });
-    } catch {
-      // user cancelled share sheet
-    }
-  };
   return (
     <div className="flex items-center gap-6 text-zinc-400 mt-3">
-      <button onClick={onLike} aria-label="Me gusta" className={cn("transition-colors", liked ? "text-red-500" : "hover:text-white")}>
+      <button onClick={onLike} aria-label="Me gusta" className={cn("transition-colors", liked ? "text-red-500" : "hover:text-ink")}>
         <Heart className={cn("w-5 h-5", liked && "fill-current")} />
       </button>
       <CommentButton threadId={`news:${item.id}`} onClick={onComments} />
-      <button onClick={share} aria-label="Compartir" className="hover:text-white">
-        <Share2 className="w-5 h-5" />
-      </button>
-      <button onClick={onSave} aria-label="Guardar" className={cn("ml-auto transition-colors", saved ? "text-white" : "hover:text-white")}>
+      <ShareButton title={item.title} text={item.sourceName} url={item.link} pointsKey={`news:${item.id}`} />
+      <button onClick={onSave} aria-label="Guardar" className={cn("ml-auto transition-colors", saved ? "text-ink" : "hover:text-ink")}>
         <Bookmark className={cn("w-5 h-5", saved && "fill-current")} />
       </button>
     </div>
@@ -74,16 +63,28 @@ function Actions({
 
 export default function NoticiasPage() {
   const { data, loading, error, refresh } = useFetchJson<NewsResponse>("/api/news", 5 * 60_000);
-  const [filter, setFilter] = useState<string>(ALL);
+  const profile = useProfile();
+  const [section, setSection] = useState<string>(ALL);
+  const [source, setSource] = useState<string>(ALL);
+  const [town, setTown] = useState<string>("");
   const [liked, setLiked] = useState<Record<string, boolean>>({});
   const [saved, setSaved] = useState<Record<string, boolean>>({});
   const [commentsFor, setCommentsFor] = useState<string | null>(null);
 
-  const sourceNames = useMemo(() => [ALL, ...NEWS_SOURCES.map((s) => s.name)], []);
-  const items = useMemo(() => {
-    const all = data?.items ?? [];
-    return filter === ALL ? all : all.filter((n) => n.sourceName === filter);
-  }, [data, filter]);
+  const sections = useMemo(
+    () => [ALL, ...(profile.diaspora ? ["Diáspora", ...SECTIONS.filter((x) => x !== "Diáspora")] : SECTIONS)],
+    [profile.diaspora]
+  );
+  const sourceNames = useMemo(() => [ALL, ...NEWS_SOURCES.map((s) => s.name), DIASPORA_FEED.name], []);
+  const items = useMemo(
+    () =>
+      (data?.items ?? [])
+        .filter((n) => section === ALL || n.section === section)
+        .filter((n) => source === ALL || n.sourceName === source || (source === DIASPORA_FEED.name && n.sourceId === DIASPORA_FEED.id))
+        .filter((n) => !town || n.municipios.includes(town)),
+    [data, section, source, town]
+  );
+  const filterLabel = [section !== ALL && section, source !== ALL && source, town].filter(Boolean).join(" · ") || "Todas";
 
   const [hero, ...rest] = items;
 
@@ -108,14 +109,48 @@ export default function NoticiasPage() {
 
   return (
     <>
-      <Chips options={sourceNames} active={filter} onChange={setFilter} className="pb-0" />
+      <Chips options={sections} active={section} onChange={setSection} className="pb-0" />
+      <div className="max-w-md mx-auto flex gap-2 overflow-x-auto scrollbar-hide px-4 pt-2">
+        {profile.pueblo && !profile.pueblo.includes("diáspora") && (
+          <button
+            onClick={() => setTown(town === profile.pueblo ? "" : profile.pueblo)}
+            className={cn(
+              "shrink-0 flex items-center gap-1 px-3 py-1.5 rounded-full text-xs font-semibold border",
+              town === profile.pueblo ? "bg-brand text-white border-brand" : "border-zinc-800 text-zinc-300"
+            )}
+          >
+            <MapPin className="w-3.5 h-3.5" /> Mi pueblo
+          </button>
+        )}
+        <select
+          value={town}
+          onChange={(e) => setTown(e.target.value)}
+          className="shrink-0 bg-zinc-900 border border-zinc-800 rounded-full px-3 py-1.5 text-xs focus:outline-none"
+          aria-label="Filtrar por municipio"
+        >
+          <option value="">Todos los pueblos</option>
+          {PUEBLOS.filter((p) => !p.includes("diáspora")).map((p) => (
+            <option key={p} value={p}>{p}</option>
+          ))}
+        </select>
+        <select
+          value={source}
+          onChange={(e) => setSource(e.target.value)}
+          className="shrink-0 bg-zinc-900 border border-zinc-800 rounded-full px-3 py-1.5 text-xs focus:outline-none"
+          aria-label="Filtrar por medio"
+        >
+          {sourceNames.map((n) => (
+            <option key={n} value={n}>{n === ALL ? "Todos los medios" : n}</option>
+          ))}
+        </select>
+      </div>
 
       <PageContent>
         <div className="flex items-center justify-between px-1 text-xs text-zinc-500">
           <span>
             {data ? `Actualizado ${new Date(data.updatedAt).toLocaleTimeString("es-PR", { hour: "numeric", minute: "2-digit" })}` : "Cargando titulares..."}
           </span>
-          <button onClick={refresh} className="flex items-center gap-1 hover:text-white" aria-label="Actualizar">
+          <button onClick={refresh} className="flex items-center gap-1 hover:text-ink" aria-label="Actualizar">
             <RefreshCw className={cn("w-3.5 h-3.5", loading && "animate-spin")} /> Actualizar
           </button>
         </div>
@@ -136,7 +171,7 @@ export default function NoticiasPage() {
         )}
 
         {data && items.length === 0 && (
-          <EmptyState icon="📰" title="Sin titulares" subtitle={`No hay noticias recientes de ${filter}.`} />
+          <EmptyState icon="📰" title="Sin titulares" subtitle={`No hay noticias recientes para: ${filterLabel}.`} />
         )}
 
         {hero && (
@@ -145,11 +180,11 @@ export default function NoticiasPage() {
               <SafeImg src={hero.image} alt="" className="w-full aspect-[16/9] object-cover" />
               <div className="p-4 pb-0">
                 <div className="flex items-center gap-2">
-                  <span className="text-[10px] font-bold uppercase tracking-wider bg-pr-red text-white px-2 py-0.5 rounded">Lo último</span>
+                  <span className="text-[10px] font-bold uppercase tracking-wider bg-brand text-white px-2 py-0.5 rounded">Lo último</span>
                   <SourceBadge item={hero} />
                   <span className="text-xs text-zinc-500">· {timeAgo(hero.publishedAt)}</span>
                 </div>
-                <h2 className="mt-2 text-xl font-bold leading-snug text-white">{hero.title}</h2>
+                <h2 className="mt-2 text-xl font-bold leading-snug text-ink">{hero.title}</h2>
                 {hero.excerpt && <p className="mt-1.5 text-sm text-zinc-400 line-clamp-3">{hero.excerpt}</p>}
               </div>
             </a>
@@ -170,7 +205,7 @@ export default function NoticiasPage() {
                           <SourceBadge item={item} />
                           <span className="text-xs text-zinc-500">· {timeAgo(item.publishedAt)}</span>
                         </div>
-                        <h3 className="mt-1.5 text-[15px] font-semibold leading-snug text-white line-clamp-3">{item.title}</h3>
+                        <h3 className="mt-1.5 text-[15px] font-semibold leading-snug text-ink line-clamp-3">{item.title}</h3>
                       </div>
                       <SafeImg src={item.image} alt="" className="w-20 h-20 rounded-2xl object-cover shrink-0" />
                     </a>

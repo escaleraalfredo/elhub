@@ -8,6 +8,8 @@ export interface NewsItem {
   publishedAt: string;
   excerpt?: string;
   image?: string;
+  section: import("./classify").Section;
+  municipios: string[];
 }
 
 export interface NewsResponse {

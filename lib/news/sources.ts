@@ -77,11 +77,24 @@ export const NEWS_SOURCES: NewsSource[] = [
   },
 ];
 
+/** Diaspora coverage: Puerto Rico stories from outlets in the States. */
+export const DIASPORA_FEED = {
+  id: "diaspora",
+  name: "Diáspora",
+  domain: "",
+  color: "bg-cyan-600",
+  feeds: [
+    `https://news.google.com/rss/search?q=${encodeURIComponent(
+      '(puertorriqueños OR boricuas OR "Puerto Rican") (Florida OR Orlando OR "Nueva York" OR "New York" OR Filadelfia OR Philadelphia) when:3d'
+    )}&hl=es-419&gl=US&ceid=US:es-419`,
+  ],
+};
+
 export function googleNewsFeed(domain: string) {
   const q = encodeURIComponent(`site:${domain} when:3d`);
   return `https://news.google.com/rss/search?q=${q}&hl=es-419&gl=US&ceid=US:es-419`;
 }
 
 export function sourceById(id: string) {
-  return NEWS_SOURCES.find((s) => s.id === id);
+  return id === DIASPORA_FEED.id ? DIASPORA_FEED : NEWS_SOURCES.find((s) => s.id === id);
 }
