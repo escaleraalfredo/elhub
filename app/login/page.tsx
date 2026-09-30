@@ -84,7 +84,7 @@ export default function LoginPage() {
           <button
             disabled={!ready || phone.replace(/\D/g, "").length < 10 || (sent && code.length < 6)}
             onClick={sent ? verify : sendCode}
-            className={cn(btn, "bg-brand text-white")}
+            className={cn(btn, "bg-accent-gradient text-white")}
           >
             {sent ? "Verificar código" : "Enviar código por SMS"}
           </button>

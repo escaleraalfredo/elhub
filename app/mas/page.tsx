@@ -78,7 +78,7 @@ export default function MasPage() {
                   <button
                     key={l}
                     onClick={() => updateProfile({ lang: l })}
-                    className={cn("px-3 py-1 rounded-full", profile.lang === l ? "bg-brand text-white" : "text-zinc-400")}
+                    className={cn("px-3 py-1 rounded-full", profile.lang === l ? "bg-ink text-zinc-950" : "text-zinc-400")}
                   >
                     {l === "es" ? "Español" : "English"}
                   </button>

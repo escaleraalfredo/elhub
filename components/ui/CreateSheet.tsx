@@ -30,7 +30,7 @@ export default function CreateSheet({
         <div className="p-4">
           <button
             onClick={onAction}
-            className="w-full bg-brand hover:brightness-110 text-white transition-all py-3.5 rounded-2xl font-semibold active:scale-[0.99]"
+            className="w-full bg-accent-gradient text-white transition-all py-3.5 rounded-2xl font-semibold active:scale-[0.99]"
           >
             {actionLabel}
           </button>

@@ -7,8 +7,8 @@ export default function manifest(): MetadataRoute.Manifest {
     description: "Noticias, deportes, eventos, luz, agua y clima de Puerto Rico",
     start_url: "/",
     display: "standalone",
-    background_color: "#faf6ef",
-    theme_color: "#0a5c8f",
+    background_color: "#050506",
+    theme_color: "#050506",
     lang: "es",
     icons: [
       { src: "/icon", sizes: "512x512", type: "image/png", purpose: "any" },

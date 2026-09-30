@@ -82,7 +82,7 @@ export default function PueblosPage() {
               className={`mt-4 w-full py-3 rounded-2xl font-medium transition-all ${
                 pueblo.checkedIn 
                   ? "bg-zinc-800 text-zinc-400" 
-                  : "bg-brand text-white hover:brightness-110"
+                  : "bg-accent-gradient text-white"
               }`}
             >
               {pueblo.checkedIn ? "✓ Ya estoy aquí" : "Check-in ahora"}

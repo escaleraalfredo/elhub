@@ -26,7 +26,7 @@ export default function GasolinaPage() {
         right={
           <div className="flex rounded-full bg-zinc-800 p-0.5 text-xs font-semibold">
             {(["litro", "galón"] as const).map((u) => (
-              <button key={u} onClick={() => setUnit(u)} className={cn("px-3 py-1 rounded-full", unit === u ? "bg-brand text-white" : "text-zinc-400")}>
+              <button key={u} onClick={() => setUnit(u)} className={cn("px-3 py-1 rounded-full", unit === u ? "bg-ink text-zinc-950" : "text-zinc-400")}>
                 {u}
               </button>
             ))}

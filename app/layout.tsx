@@ -16,14 +16,14 @@ export const metadata: Metadata = {
   title: { default: "ElHub · Puerto Rico", template: "%s · ElHub" },
   description: "Lo que pasa en Puerto Rico: noticias, deportes, eventos, luz, agua y clima.",
   applicationName: "ElHub",
-  appleWebApp: { capable: true, title: "ElHub", statusBarStyle: "default" },
+  appleWebApp: { capable: true, title: "ElHub", statusBarStyle: "black-translucent" },
 };
 
 export const viewport: Viewport = {
-  themeColor: [
-    { media: "(prefers-color-scheme: light)", color: "#faf6ef" },
-    { media: "(prefers-color-scheme: dark)", color: "#06111b" },
-  ],
+  themeColor: "#050506",
+  viewportFit: "cover",
+  width: "device-width",
+  initialScale: 1,
 };
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {
