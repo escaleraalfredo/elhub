@@ -88,7 +88,7 @@ export default function Spots({ activeCategory, viewMode, setShowRatingModal }: 
     return (
       <div className="bg-zinc-900 border border-zinc-800 rounded-3xl h-[560px] flex flex-col items-center justify-center text-center p-8">
         <Map className="w-16 h-16 text-zinc-500 mb-6" />
-        <h3 className="text-white text-2xl font-bold">Mapa de Rankings 🇵🇷</h3>
+        <h3 className="text-ink text-2xl font-bold">Mapa de Rankings 🇵🇷</h3>
         <p className="text-zinc-400 mt-2">Próximamente: mapa interactivo con pines</p>
       </div>
     );
@@ -116,17 +116,17 @@ export default function Spots({ activeCategory, viewMode, setShowRatingModal }: 
           <div className="p-5">
             <div className="flex justify-between items-start">
               <div>
-                <h3 className="text-white font-bold text-xl">{spot.name}</h3>
+                <h3 className="text-ink font-bold text-xl">{spot.name}</h3>
                 <div className="flex items-center gap-1 text-zinc-400 text-sm mt-1">
                   <MapPin className="w-4 h-4" />
                   {spot.location}
                 </div>
-                <div className="text-pr-red text-xs font-medium mt-3">{spot.type}</div>
+                <div className="text-brand text-xs font-medium mt-3">{spot.type}</div>
               </div>
 
               <button
                 onClick={() => setShowRatingModal(spot.id)}
-                className="bg-pr-red hover:bg-red-600 text-white text-sm font-semibold px-5 py-2.5 rounded-full transition-all active:scale-95"
+                className="bg-brand hover:brightness-110 text-white text-sm font-semibold px-5 py-2.5 rounded-full transition-all active:scale-95"
               >
                 Calificar
               </button>
