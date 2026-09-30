@@ -1,38 +1,43 @@
 // app/layout.tsx
-import type { Metadata } from "next";
-import { Geist, Geist_Mono } from "next/font/google";
+import type { Metadata, Viewport } from "next";
+import { Inter, Montserrat } from "next/font/google";
 import "./globals.css";
 import { Toaster } from "sonner";
+import Providers from "@/components/Providers";
 import GlobalHeader from "@/components/GlobalHeader";
+import AlertBanner from "@/components/AlertBanner";
 import BottomNav from "@/components/BottomNav";
+import ServiceWorker from "@/components/ServiceWorker";
 
-const geistSans = Geist({
-  variable: "--font-geist-sans",
-  subsets: ["latin"],
-});
-
-const geistMono = Geist_Mono({
-  variable: "--font-geist-mono",
-  subsets: ["latin"],
-});
+const inter = Inter({ variable: "--font-inter", subsets: ["latin"] });
+const display = Montserrat({ variable: "--font-display", subsets: ["latin"], weight: ["600", "700", "800"] });
 
 export const metadata: Metadata = {
-  title: "ElHub - Puerto Rico",
-  description: "Lo que pasa en Puerto Rico",
+  title: { default: "ElHub · Puerto Rico", template: "%s · ElHub" },
+  description: "Lo que pasa en Puerto Rico: noticias, deportes, eventos, luz, agua y clima.",
+  applicationName: "ElHub",
+  appleWebApp: { capable: true, title: "ElHub", statusBarStyle: "default" },
 };
 
-export default function RootLayout({
-  children,
-}: {
-  children: React.ReactNode;
-}) {
+export const viewport: Viewport = {
+  themeColor: [
+    { media: "(prefers-color-scheme: light)", color: "#faf6ef" },
+    { media: "(prefers-color-scheme: dark)", color: "#06111b" },
+  ],
+};
+
+export default function RootLayout({ children }: { children: React.ReactNode }) {
   return (
-    <html lang="es" className="dark">
-      <body className={`${geistSans.variable} ${geistMono.variable} bg-dark-bg text-white antialiased`}>
-        <GlobalHeader />
-        {children}
-        <BottomNav />
-        <Toaster position="top-center" richColors closeButton />
+    <html lang="es" suppressHydrationWarning>
+      <body className={`${inter.variable} ${display.variable} bg-zinc-950 text-ink antialiased`}>
+        <Providers>
+          <GlobalHeader />
+          <AlertBanner />
+          {children}
+          <BottomNav />
+          <Toaster position="top-center" richColors closeButton />
+          <ServiceWorker />
+        </Providers>
       </body>
     </html>
   );

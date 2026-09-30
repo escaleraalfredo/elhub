@@ -8,9 +8,6 @@ import { useRouter } from "next/navigation";
 import { ChevronLeft } from "lucide-react";
 import { cn } from "@/lib/utils";
 
-/** Height of GlobalHeader (h-14). Sticky bars sit right below it. */
-export const HEADER_OFFSET = "top-14";
-
 export function PageShell({
   children,
   className,
@@ -42,7 +39,7 @@ export function StickyBar({
   return (
     <div
       className={cn(
-        "sticky top-14 z-40 bg-zinc-950/95 backdrop-blur border-b border-zinc-800",
+        "sticky top-[3.625rem] z-40 bg-zinc-950/95 backdrop-blur border-b border-zinc-800",
         className
       )}
     >
@@ -70,14 +67,14 @@ export function PageHeader({
         {back && (
           <button
             onClick={() => router.back()}
-            className="-ml-1 p-1 text-zinc-400 hover:text-white"
+            className="-ml-1 p-1 text-zinc-400 hover:text-ink"
             aria-label="Atrás"
           >
             <ChevronLeft className="w-6 h-6" />
           </button>
         )}
         <div className="flex-1 min-w-0">
-          <h1 className="text-lg font-bold text-white leading-tight truncate">{title}</h1>
+          <h1 className="text-lg font-bold text-ink leading-tight truncate">{title}</h1>
           {subtitle && <p className="text-xs text-zinc-500 truncate">{subtitle}</p>}
         </div>
         {right}
@@ -105,10 +102,10 @@ export function Tabs({
         const isActive = key === active;
         const cls = cn(
           "relative flex-1 py-3 text-sm font-semibold text-center transition-colors",
-          isActive ? "text-white" : "text-zinc-500 hover:text-zinc-300"
+          isActive ? "text-ink" : "text-zinc-500 hover:text-zinc-300"
         );
         const bar = isActive && (
-          <span className="absolute bottom-0 left-3 right-3 h-0.5 rounded-full bg-pr-red" />
+          <span className="absolute bottom-0 left-3 right-3 h-0.5 rounded-full bg-brand" />
         );
         return tab.href ? (
           <Link key={key} href={tab.href} className={cls}>
@@ -149,7 +146,7 @@ export function Chips<T extends string>({
           className={cn(
             "shrink-0 px-4 py-1.5 rounded-full text-sm font-medium whitespace-nowrap transition-colors",
             opt === active
-              ? "bg-pr-red text-white"
+              ? "bg-brand text-white"
               : "bg-zinc-900 text-zinc-300 border border-zinc-800 hover:bg-zinc-800"
           )}
         >
@@ -210,7 +207,7 @@ export function EmptyState({
   return (
     <div className="py-14 text-center">
       {icon && <div className="text-4xl mb-3">{icon}</div>}
-      <p className="font-semibold text-white">{title}</p>
+      <p className="font-semibold text-ink">{title}</p>
       {subtitle && <p className="text-sm text-zinc-500 mt-1 max-w-xs mx-auto">{subtitle}</p>}
     </div>
   );
@@ -219,7 +216,7 @@ export function EmptyState({
 /** Small banner shown when a section is displaying sample instead of live data. */
 export function Notice({ children }: { children: React.ReactNode }) {
   return (
-    <div className="rounded-2xl border border-amber-500/30 bg-amber-500/10 px-4 py-2.5 text-xs text-amber-200">
+    <div className="rounded-2xl border border-amber-300 bg-amber-50 px-4 py-2.5 text-xs text-amber-900 dark:border-amber-500/30 dark:bg-amber-500/10 dark:text-amber-200">
       {children}
     </div>
   );

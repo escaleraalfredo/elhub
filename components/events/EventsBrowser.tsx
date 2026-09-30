@@ -1,14 +1,17 @@
-// app/trending/eventos.tsx
+// components/events/EventsBrowser.tsx
 "use client";
 
 import { Fragment, useMemo, useRef, useState } from "react";
 import {
-  CalendarDays, CalendarPlus, Check, ExternalLink, MapPin, Search, Share2, Star, X,
+  CalendarDays, CalendarPlus, Check, ExternalLink, LocateFixed, MapPin, Search, Star, X,
 } from "lucide-react";
 import { toast } from "sonner";
 import { Card, EmptyState, Notice, Skeleton } from "@/components/ui/Page";
 import SafeImg from "@/components/ui/SafeImg";
 import Sponsored from "@/components/ui/Sponsored";
+import ShareButton from "@/components/ui/ShareButton";
+import { useProfile } from "@/lib/profile";
+import { REGION_NAMES, WEATHER_ZONES, regionOf, type Region } from "@/lib/utilities/municipios";
 import { CommentButton, CommentsSheet } from "@/components/comments/Comments";
 import { EVENT_CATEGORIES, type EventCategory, type EventItem, type EventsResponse } from "@/lib/events/types";
 import { downloadIcs, toggleEvent, useEventLists } from "@/lib/events/store";
@@ -85,25 +88,11 @@ function EventCard({ e, onOpen }: { e: EventItem; onOpen: () => void }) {
   const d = keyDate(e.day);
   const p = price(e);
 
-  const share = async () => {
-    const text = `${e.title} · ${e.venue}, ${e.city}`;
-    try {
-      if (navigator.share) await navigator.share({ title: e.title, text, url: e.url ?? window.location.href });
-      else {
-        await navigator.clipboard.writeText(`${text} ${e.url ?? ""}`.trim());
-        toast.success("Copiado");
-      }
-      award("share", { key: `event:${e.id}` });
-    } catch {
-      // cancelled
-    }
-  };
-
   return (
     <Card>
       <button onClick={onOpen} className="w-full text-left flex gap-3 p-3">
         <div className="w-14 shrink-0 rounded-2xl bg-zinc-950 border border-zinc-800 flex flex-col items-center justify-center py-2">
-          <span className="text-[10px] font-bold uppercase text-pr-red">
+          <span className="text-[10px] font-bold uppercase text-brand">
             {d.toLocaleDateString("es-PR", { month: "short", timeZone: TZ }).replace(".", "")}
           </span>
           <span className="text-2xl font-bold leading-none tabular-nums">{d.getUTCDate()}</span>
@@ -114,9 +103,9 @@ function EventCard({ e, onOpen }: { e: EventItem; onOpen: () => void }) {
         <div className="flex-1 min-w-0">
           <div className="flex items-center gap-2 text-[11px] text-zinc-400">
             <span>{catMeta(e.category).emoji} {catMeta(e.category).label}</span>
-            <span>· {time(e)}</span>
+            <span>· {e.approximate ? "fecha de referencia" : time(e)}</span>
           </div>
-          <h3 className="mt-0.5 font-semibold text-[15px] leading-snug text-white line-clamp-2">{e.title}</h3>
+          <h3 className="mt-0.5 font-semibold text-[15px] leading-snug text-ink line-clamp-2">{e.title}</h3>
           <p className="mt-1 flex items-center gap-1 text-xs text-zinc-400 truncate">
             <MapPin className="w-3.5 h-3.5 shrink-0" />
             <span className="truncate">{e.venue} · {e.city}</span>
@@ -148,9 +137,13 @@ function EventCard({ e, onOpen }: { e: EventItem; onOpen: () => void }) {
         <button onClick={() => downloadIcs(e)} aria-label="Añadir al calendario" className="p-2 rounded-full text-zinc-400 hover:bg-zinc-800">
           <CalendarPlus className="w-4 h-4" />
         </button>
-        <button onClick={share} aria-label="Compartir" className="p-2 rounded-full text-zinc-400 hover:bg-zinc-800">
-          <Share2 className="w-4 h-4" />
-        </button>
+        <ShareButton
+          title={e.title}
+          text={`${e.venue} · ${e.city}`}
+          url={e.url ?? "/eventos"}
+          pointsKey={`event:${e.id}`}
+          className="p-2 rounded-full hover:bg-zinc-800 [&_svg]:w-4 [&_svg]:h-4"
+        />
         <CommentButton threadId={`event:${e.id}`} onClick={onOpen} className="ml-auto px-2 [&_svg]:w-4 [&_svg]:h-4 [&_span]:text-xs" />
       </div>
     </Card>
@@ -172,7 +165,7 @@ function EventDetails({ e }: { e: EventItem }) {
           <CalendarDays className="w-4 h-4 text-zinc-500" />
           {keyDate(e.day).toLocaleDateString("es-PR", { weekday: "long", day: "numeric", month: "long", timeZone: TZ })} · {time(e)}
         </p>
-        <a href={maps} target="_blank" rel="noopener noreferrer" className="flex items-center gap-2 hover:text-white">
+        <a href={maps} target="_blank" rel="noopener noreferrer" className="flex items-center gap-2 hover:text-ink">
           <MapPin className="w-4 h-4 text-zinc-500" /> {e.venue}, {e.city} <span className="text-sky-400 text-xs">Ver mapa</span>
         </a>
         {p && <p className="pl-6 font-semibold">{p}</p>}
@@ -184,7 +177,7 @@ function EventDetails({ e }: { e: EventItem }) {
             href={e.url}
             target="_blank"
             rel="noopener noreferrer"
-            className="flex-1 flex items-center justify-center gap-2 bg-pr-red hover:bg-red-600 rounded-2xl py-3 font-semibold text-sm"
+            className="flex-1 flex items-center justify-center gap-2 bg-brand hover:brightness-110 text-white rounded-2xl py-3 font-semibold text-sm"
           >
             Boletos <ExternalLink className="w-4 h-4" />
           </a>
@@ -214,17 +207,40 @@ export default function Eventos() {
   const [freeOnly, setFreeOnly] = useState(false);
   const [savedOnly, setSavedOnly] = useState(false);
   const [open, setOpen] = useState<EventItem | null>(null);
+  const [near, setNear] = useState<Region | null>(null);
+  const profile = useProfile();
 
+  const findNear = () => {
+    if (near) return setNear(null);
+    if (!navigator.geolocation) return toast.error("Tu navegador no comparte ubicación");
+    navigator.geolocation.getCurrentPosition(
+      ({ coords }) => {
+        const best = REGION_NAMES.map((r) => ({
+          r,
+          d: (WEATHER_ZONES[r].lat - coords.latitude) ** 2 + (WEATHER_ZONES[r].lon - coords.longitude) ** 2,
+        })).sort((x, y) => x.d - y.d)[0];
+        if (best.d > 1) toast.info("Parece que estás fuera de PR. Activa “Desde afuera” en Más para ver eventos boricuas donde vives.");
+        setNear(best.r);
+      },
+      () => toast.error("No pudimos obtener tu ubicación")
+    );
+  };
+
+  const visibleEvents = useMemo(
+    () => (data?.events ?? []).filter((e) => profile.diaspora || !e.diaspora),
+    [data, profile.diaspora]
+  );
   const cities = useMemo(
-    () => ["Toda la isla", ...Array.from(new Set((data?.events ?? []).map((e) => e.city))).sort()],
-    [data]
+    () => ["Toda la isla", ...Array.from(new Set(visibleEvents.map((e) => e.city))).sort()],
+    [visibleEvents]
   );
 
   const filtered = useMemo(() => {
     const r = range(when, today, picked);
     const q = query.trim().toLowerCase();
-    return (data?.events ?? [])
+    return visibleEvents
       .filter((e) => e.day >= today)
+      .filter((e) => !near || regionOf(e.city) === near)
       .filter((e) => !r || (e.day >= r[0] && e.day <= r[1]))
       .filter((e) => cat === "todo" || e.category === cat)
       .filter((e) => city === "Toda la isla" || e.city === city)
@@ -232,7 +248,7 @@ export default function Eventos() {
       .filter((e) => !savedOnly || lists.saved[e.id] || lists.going[e.id])
       .filter((e) => !q || `${e.title} ${e.venue} ${e.city}`.toLowerCase().includes(q))
       .sort((a, b) => a.start.localeCompare(b.start));
-  }, [data, when, picked, today, query, cat, city, freeOnly, savedOnly, lists]);
+  }, [visibleEvents, near, when, picked, today, query, cat, city, freeOnly, savedOnly, lists]);
 
   const groups = useMemo(() => {
     const m = new Map<string, EventItem[]>();
@@ -240,7 +256,7 @@ export default function Eventos() {
     return [...m.entries()];
   }, [filtered]);
 
-  const activeFilters = (when !== "todo" ? 1 : 0) + (cat !== "todo" ? 1 : 0) + (city !== "Toda la isla" ? 1 : 0) + (freeOnly ? 1 : 0) + (savedOnly ? 1 : 0) + (query ? 1 : 0);
+  const activeFilters = (when !== "todo" ? 1 : 0) + (cat !== "todo" ? 1 : 0) + (city !== "Toda la isla" ? 1 : 0) + (freeOnly ? 1 : 0) + (savedOnly ? 1 : 0) + (query ? 1 : 0) + (near ? 1 : 0);
   const clear = () => {
     setQuery("");
     setWhen("todo");
@@ -249,12 +265,13 @@ export default function Eventos() {
     setCity("Toda la isla");
     setFreeOnly(false);
     setSavedOnly(false);
+    setNear(null);
   };
 
   const chip = (active: boolean) =>
     cn(
       "shrink-0 px-3.5 py-1.5 rounded-full text-sm font-medium whitespace-nowrap transition-colors",
-      active ? "bg-pr-red text-white" : "bg-zinc-900 text-zinc-300 border border-zinc-800 hover:bg-zinc-800"
+      active ? "bg-brand text-white" : "bg-zinc-900 text-zinc-300 border border-zinc-800 hover:bg-zinc-800"
     );
 
   let shown = 0;
@@ -325,8 +342,8 @@ export default function Eventos() {
       </div>
 
       {/* Where / extras */}
-      <div className="flex items-center gap-2">
-        <label className="flex items-center gap-1.5 bg-zinc-900 border border-zinc-800 rounded-full pl-3 pr-2 py-1.5 text-sm">
+      <div className="-mx-4 flex items-center gap-2 overflow-x-auto scrollbar-hide px-4">
+        <label className="shrink-0 flex items-center gap-1.5 bg-zinc-900 border border-zinc-800 rounded-full pl-3 pr-2 py-1.5 text-sm">
           <MapPin className="w-4 h-4 text-zinc-500" />
           <select value={city} onChange={(e) => setCity(e.target.value)} className="bg-transparent focus:outline-none text-zinc-200">
             {cities.map((c) => (
@@ -334,6 +351,9 @@ export default function Eventos() {
             ))}
           </select>
         </label>
+        <button onClick={findNear} className={cn(chip(!!near), "flex items-center gap-1")}>
+          <LocateFixed className="w-3.5 h-3.5" /> {near ? `Cerca: ${near}` : "Cerca de mí"}
+        </button>
         <button onClick={() => setFreeOnly(!freeOnly)} className={chip(freeOnly)}>Gratis</button>
         <button onClick={() => setSavedOnly(!savedOnly)} className={cn(chip(savedOnly), "flex items-center gap-1")}>
           <Star className="w-3.5 h-3.5" /> Míos
@@ -343,7 +363,7 @@ export default function Eventos() {
       <div className="flex items-center justify-between px-1 text-xs text-zinc-500">
         <span>{data ? `${filtered.length} ${filtered.length === 1 ? "evento" : "eventos"}` : "Buscando eventos..."}</span>
         {activeFilters > 0 && (
-          <button onClick={clear} className="font-semibold text-pr-red">Borrar filtros</button>
+          <button onClick={clear} className="font-semibold text-brand">Borrar filtros</button>
         )}
       </div>
 

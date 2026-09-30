@@ -3,7 +3,10 @@
 // prediction with community split, and fan reactions.
 "use client";
 
-import { MessageCircle } from "lucide-react";
+import { MessageCircle, Star } from "lucide-react";
+import ShareButton from "@/components/ui/ShareButton";
+import { toggleTeam, useProfile } from "@/lib/profile";
+import { teamKey } from "@/lib/sports/favorites";
 import TeamLogo from "./TeamLogo";
 import { useCommentCount } from "@/lib/comments/store";
 import {
@@ -20,13 +23,27 @@ export function pickResult(game: Game, pick?: Side): "won" | "lost" | null {
   return winner === pick ? "won" : "lost";
 }
 
-function Big({ side, game }: { side: GameSide; game: Game }) {
+function Big({ side, game, which }: { side: GameSide; game: Game; which: "home" | "away" }) {
   const lost = game.state === "post" && side.winner === false;
+  const { teams } = useProfile();
+  const key = teamKey(game, which);
+  const following = teams.includes(key);
   return (
-    <div className={cn("flex-1 flex flex-col items-center text-center gap-1.5 min-w-0", lost && "opacity-50")}>
-      <TeamLogo team={side.team} size={44} />
-      <p className="font-semibold text-sm leading-tight line-clamp-2">{side.team.name}</p>
-      {side.record && <p className="text-[11px] text-zinc-500">{side.record}</p>}
+    <div className="flex-1 flex flex-col items-center text-center gap-1.5 min-w-0">
+      <div className={cn("flex flex-col items-center gap-1.5", lost && "opacity-50")}>
+        <TeamLogo team={side.team} size={44} />
+        <p className="font-semibold text-sm leading-tight line-clamp-2">{side.team.name}</p>
+        {side.record && <p className="text-[11px] text-zinc-500">{side.record}</p>}
+      </div>
+      <button
+        onClick={() => toggleTeam(key)}
+        className={cn(
+          "flex items-center gap-1 px-2.5 py-1 rounded-full text-[11px] font-semibold border",
+          following ? "border-yellow-400 text-yellow-400" : "border-zinc-700 text-zinc-400"
+        )}
+      >
+        <Star className={cn("w-3 h-3", following && "fill-current")} /> {following ? "Siguiendo" : "Seguir"}
+      </button>
     </div>
   );
 }
@@ -50,13 +67,13 @@ export function GameHeader({ game }: { game: Game }) {
       onClick={() => choose(side)}
       className={cn(
         "relative flex-1 overflow-hidden rounded-xl border px-3 py-2.5 text-sm font-semibold transition-colors",
-        pick === side ? "border-pr-red" : "border-zinc-700",
-        canPick && "hover:border-pr-red"
+        pick === side ? "border-brand" : "border-zinc-700",
+        canPick && "hover:border-brand"
       )}
     >
       {(pick || !canPick) && (
         <span
-          className={cn("absolute inset-y-0 left-0", pick === side ? "bg-pr-red/25" : "bg-zinc-800")}
+          className={cn("absolute inset-y-0 left-0", pick === side ? "bg-brand/25" : "bg-zinc-800")}
           style={{ width: `${pct}%` }}
         />
       )}
@@ -72,7 +89,7 @@ export function GameHeader({ game }: { game: Game }) {
       <div>
         {game.group && <p className="text-center text-xs text-zinc-500 mb-2">{game.group}{game.detail ? ` · ${game.detail}` : ""}</p>}
         <div className="flex items-center gap-3">
-          <Big side={game.away} game={game} />
+          <Big side={game.away} game={game} which="away" />
           <div className="text-center shrink-0">
             {game.away.score !== undefined ? (
               <p className="text-3xl font-bold tabular-nums">
@@ -81,11 +98,11 @@ export function GameHeader({ game }: { game: Game }) {
             ) : (
               <p className="text-lg font-bold text-zinc-500">VS</p>
             )}
-            <p className={cn("text-xs font-semibold mt-1", game.state === "in" ? "text-red-500" : "text-zinc-400")}>
+            <p className={cn("text-xs font-semibold mt-1", game.state === "in" ? "text-coral" : "text-zinc-400")}>
               {game.state === "in" ? `EN VIVO · ${game.status}` : game.status}
             </p>
           </div>
-          <Big side={game.home} game={game} />
+          <Big side={game.home} game={game} which="home" />
         </div>
       </div>
 
@@ -114,7 +131,17 @@ export function GameHeader({ game }: { game: Game }) {
       </div>
 
       <div>
-        <h4 className="text-sm font-semibold mb-2">Reacciones</h4>
+        <div className="flex items-center justify-between mb-2">
+          <h4 className="text-sm font-semibold">Reacciones</h4>
+          <ShareButton
+            title={`${game.away.team.name} vs ${game.home.team.name}${game.away.score !== undefined ? ` (${game.away.score}-${game.home.score})` : ""}`}
+            text={game.status}
+            url="/deportes"
+            pointsKey={`game:${game.id}`}
+            label="Compartir"
+            className="text-xs"
+          />
+        </div>
         <div className="flex flex-wrap gap-2">
           {reactionCounts(game.id, reactions[game.id]).map(({ r, count, mine }) => (
             <button
@@ -124,7 +151,7 @@ export function GameHeader({ game }: { game: Game }) {
               }}
               className={cn(
                 "flex items-center gap-1.5 px-3 py-1.5 rounded-full border text-sm transition-colors",
-                mine ? "border-pr-red bg-pr-red/15" : "border-zinc-800 bg-zinc-800/60 hover:bg-zinc-800"
+                mine ? "border-brand bg-brand/15" : "border-zinc-800 bg-zinc-800/60 hover:bg-zinc-800"
               )}
             >
               <span className="text-base">{r}</span>
@@ -155,7 +182,7 @@ export function GameFooter({ game }: { game: Game }) {
         <span
           className={cn(
             "px-2.5 py-1 rounded-full font-semibold",
-            result === "won" ? "bg-emerald-500/15 text-emerald-400" : result === "lost" ? "bg-zinc-800 text-zinc-500" : "bg-pr-red/15 text-pr-red"
+            result === "won" ? "bg-emerald-500/15 text-emerald-400" : result === "lost" ? "bg-zinc-800 text-zinc-500" : "bg-brand/15 text-brand"
           )}
         >
           {result === "won" ? "✅ " : result === "lost" ? "❌ " : ""}Tu pick: {pickedTeam.abbr}

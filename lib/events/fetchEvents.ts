@@ -2,6 +2,7 @@
 // Upcoming Puerto Rico events from the Ticketmaster Discovery API (free key:
 // developer.ticketmaster.com → set TICKETMASTER_API_KEY). Falls back to
 // sample events when no key is configured or the API fails.
+import { patronalesEvents } from "./patronales";
 import { sampleEvents } from "./sample";
 import type { EventCategory, EventItem, EventsResponse } from "./types";
 
@@ -56,7 +57,11 @@ function toItem(e: TmEvent): EventItem | null {
 export async function fetchEvents(): Promise<EventsResponse> {
   const now = Date.now();
   const key = process.env.TICKETMASTER_API_KEY;
-  const fallback = { events: sampleEvents(now), sample: true, updatedAt: new Date(now).toISOString() };
+  const fallback = {
+    events: [...sampleEvents(now), ...patronalesEvents(now)],
+    sample: true,
+    updatedAt: new Date(now).toISOString(),
+  };
   if (!key) return fallback;
 
   const params = new URLSearchParams({
@@ -75,7 +80,7 @@ export async function fetchEvents(): Promise<EventsResponse> {
     const json = (await res.json()) as { _embedded?: { events?: TmEvent[] } };
     const events = (json._embedded?.events ?? []).map(toItem).filter((e): e is EventItem => !!e);
     if (!events.length) return fallback;
-    return { events, sample: false, updatedAt: new Date(now).toISOString() };
+    return { events: [...events, ...patronalesEvents(now)], sample: false, updatedAt: new Date(now).toISOString() };
   } catch {
     return fallback;
   }

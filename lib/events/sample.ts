@@ -19,6 +19,11 @@ const VENUES = {
   caguas: { venue: "Plaza Palmer", city: "Caguas" },
   carolina: { venue: "Coliseo Guillermo Angulo", city: "Carolina" },
   luquillo: { venue: "Balneario La Monserrate", city: "Luquillo" },
+  placita: { venue: "La Placita de Santurce", city: "San Juan" },
+  orlando: { venue: "Centro comunitario (ejemplo)", city: "Orlando, FL" },
+  kissimmee: { venue: "Parque central (ejemplo)", city: "Kissimmee, FL" },
+  nyc: { venue: "El Barrio (ejemplo)", city: "Nueva York, NY" },
+  philly: { venue: "Centro cultural (ejemplo)", city: "Filadelfia, PA" },
 } as const;
 
 type Def = {
@@ -30,6 +35,7 @@ type Def = {
   price?: [number, number];
   free?: boolean;
   description?: string;
+  diaspora?: boolean;
 };
 
 const DEFS: Def[] = [
@@ -57,6 +63,12 @@ const DEFS: Def[] = [
   { title: "Fiestas patronales (ejemplo)", category: "festivales", v: "placitaMay", inDays: 27, time: "17:00", free: true },
   { title: "Ballet: temporada de otoño (ejemplo)", category: "entretenimiento", v: "bellas", inDays: 32, time: "19:00", price: [25, 70] },
   { title: "Béisbol invernal: juego inaugural (ejemplo)", category: "juegos", v: "hiram", inDays: 40, time: "19:00", price: [10, 35] },
+  { title: "Jueves de Placita (ejemplo)", category: "nocturna", v: "placita", inDays: 2, time: "21:00", free: true },
+  { title: "Noche de DJ en Santurce (ejemplo)", category: "nocturna", v: "distrito", inDays: 4, time: "22:30", price: [15, 25] },
+  { title: "Parranda boricua (ejemplo)", category: "festivales", v: "orlando", inDays: 5, time: "18:00", free: true, diaspora: true },
+  { title: "Salsa en el parque (ejemplo)", category: "conciertos", v: "kissimmee", inDays: 9, time: "19:00", free: true, diaspora: true },
+  { title: "Bomba y plena en El Barrio (ejemplo)", category: "festivales", v: "nyc", inDays: 12, time: "17:00", free: true, diaspora: true },
+  { title: "Festival puertorriqueño (ejemplo)", category: "festivales", v: "philly", inDays: 20, time: "12:00", free: true, diaspora: true },
 ];
 
 const PR_OFFSET_H = 4; // UTC-4, no DST
@@ -79,6 +91,7 @@ export function sampleEvents(now = Date.now()): EventItem[] {
       priceMax: e.price?.[1],
       free: e.free,
       description: e.description,
+      diaspora: e.diaspora,
     };
   });
 }

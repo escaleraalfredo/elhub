@@ -3,27 +3,27 @@
 "use client";
 
 import { useSyncExternalStore } from "react";
+import { PUEBLOS } from "./pueblos";
 
-export const PUEBLOS = [
-  "Adjuntas", "Aguada", "Aguadilla", "Aguas Buenas", "Aibonito", "Añasco", "Arecibo", "Arroyo",
-  "Barceloneta", "Barranquitas", "Bayamón", "Cabo Rojo", "Caguas", "Camuy", "Canóvanas", "Carolina",
-  "Cataño", "Cayey", "Ceiba", "Ciales", "Cidra", "Coamo", "Comerío", "Corozal", "Culebra", "Dorado",
-  "Fajardo", "Florida", "Guánica", "Guayama", "Guayanilla", "Guaynabo", "Gurabo", "Hatillo",
-  "Hormigueros", "Humacao", "Isabela", "Jayuya", "Juana Díaz", "Juncos", "Lajas", "Lares",
-  "Las Marías", "Las Piedras", "Loíza", "Luquillo", "Manatí", "Maricao", "Maunabo", "Mayagüez",
-  "Moca", "Morovis", "Naguabo", "Naranjito", "Orocovis", "Patillas", "Peñuelas", "Ponce",
-  "Quebradillas", "Rincón", "Río Grande", "Sabana Grande", "Salinas", "San Germán", "San Juan",
-  "San Lorenzo", "San Sebastián", "Santa Isabel", "Toa Alta", "Toa Baja", "Trujillo Alto", "Utuado",
-  "Vega Alta", "Vega Baja", "Vieques", "Villalba", "Yabucoa", "Yauco", "La diáspora 🌎",
-];
+export { PUEBLOS };
+
+
+export type Lang = "es" | "en";
 
 interface Profile {
   username: string;
   pueblo: string;
+  lang: Lang;
+  /** "Desde afuera": diaspora mode (news from home first, events in the States). */
+  diaspora: boolean;
+  /** Where the user lives when outside PR, e.g. "Orlando". */
+  diasporaCity: string;
+  /** Favorite team ids, as `${league}:${teamId}`. */
+  teams: string[];
 }
 
 const KEY = "elhub:profile:v1";
-const INITIAL: Profile = { username: "tuusuario", pueblo: "" };
+const INITIAL: Profile = { username: "tuusuario", pueblo: "", lang: "es", diaspora: false, diasporaCity: "", teams: [] };
 let state: Profile = INITIAL;
 let loaded = false;
 const listeners = new Set<() => void>();
@@ -65,4 +65,11 @@ export function useProfile() {
     },
     () => INITIAL
   );
+}
+
+export function toggleTeam(key: string): boolean {
+  load();
+  const on = !state.teams.includes(key);
+  updateProfile({ teams: on ? [...state.teams, key] : state.teams.filter((t) => t !== key) });
+  return on;
 }

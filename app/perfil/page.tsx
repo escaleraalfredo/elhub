@@ -86,7 +86,7 @@ export default function PerfilPage() {
                 </select>
               </label>
             </div>
-            <Link href="/settings" aria-label="Configuración" className="p-2 text-zinc-400 hover:text-white self-start">
+            <Link href="/settings" aria-label="Configuración" className="p-2 text-zinc-400 hover:text-ink self-start">
               <Settings className="w-5 h-5" />
             </Link>
           </div>
@@ -102,7 +102,7 @@ export default function PerfilPage() {
             </div>
             <div className="h-2 bg-zinc-800 rounded-full overflow-hidden">
               <div
-                className="h-full bg-gradient-to-r from-emerald-400 to-pr-red transition-all duration-700"
+                className="h-full bg-gradient-to-r from-palm to-brand transition-all duration-700"
                 style={{ width: `${Math.round(level.progress * 100)}%` }}
               />
             </div>
@@ -157,7 +157,7 @@ export default function PerfilPage() {
 
         {/* My events */}
         <section className="space-y-2">
-          <SectionTitle right={<Link href="/trending" className="text-xs font-semibold text-pr-red">Ver eventos</Link>}>
+          <SectionTitle right={<Link href="/eventos" className="text-xs font-semibold text-brand">Ver eventos</Link>}>
             Mis próximos eventos
           </SectionTitle>
           {upcoming.length === 0 ? (
@@ -168,7 +168,7 @@ export default function PerfilPage() {
             <Card className="divide-y divide-zinc-800">
               {upcoming.map((e) => (
                 <div key={e.id} className="flex items-center gap-3 p-3">
-                  <CalendarDays className="w-5 h-5 text-pr-red shrink-0" />
+                  <CalendarDays className="w-5 h-5 text-brand shrink-0" />
                   <div className="min-w-0 flex-1">
                     <p className="text-sm font-semibold truncate">{e.title}</p>
                     <p className="text-xs text-zinc-500 truncate">
@@ -192,7 +192,7 @@ export default function PerfilPage() {
             {shown.map((u) => {
               const mine = "me" in u;
               return (
-                <div key={u.name + u.rank} className={cn("flex items-center gap-3 px-4 py-3", mine && "bg-pr-red/10")}>
+                <div key={u.name + u.rank} className={cn("flex items-center gap-3 px-4 py-3", mine && "bg-brand/10")}>
                   <span
                     className={cn(
                       "w-7 h-7 rounded-full flex items-center justify-center text-xs font-bold shrink-0",
@@ -203,7 +203,7 @@ export default function PerfilPage() {
                   </span>
                   <Avatar name={u.name} size={32} />
                   <div className="flex-1 min-w-0">
-                    <p className={cn("text-sm font-semibold truncate", mine && "text-pr-red")}>{mine ? "Tú" : u.name}</p>
+                    <p className={cn("text-sm font-semibold truncate", mine && "text-brand")}>{mine ? "Tú" : u.name}</p>
                     {u.pueblo && <p className="text-[11px] text-zinc-500">{u.pueblo}</p>}
                   </div>
                   <span className="text-sm font-bold tabular-nums">{u.weekly} pts</span>
@@ -223,7 +223,7 @@ export default function PerfilPage() {
             {badges.map((b) => {
               const done = b.value >= b.goal;
               return (
-                <Card key={b.name} className={cn("p-3", done ? "border-pr-red/60" : "opacity-80")}>
+                <Card key={b.name} className={cn("p-3", done ? "border-brand/60" : "opacity-80")}>
                   <div className="flex items-center gap-2">
                     <span className={cn("text-2xl", !done && "grayscale")}>{b.icon}</span>
                     <div className="min-w-0">
@@ -233,7 +233,7 @@ export default function PerfilPage() {
                   </div>
                   <div className="mt-2 h-1.5 bg-zinc-800 rounded-full overflow-hidden">
                     <div
-                      className={cn("h-full", done ? "bg-pr-red" : "bg-zinc-500")}
+                      className={cn("h-full", done ? "bg-brand" : "bg-zinc-500")}
                       style={{ width: `${Math.min(100, (b.value / b.goal) * 100)}%` }}
                     />
                   </div>
@@ -272,7 +272,7 @@ export default function PerfilPage() {
                         key={l.title}
                         className={cn(
                           "px-2.5 py-1 rounded-full text-[11px] border",
-                          i + 1 === level.level ? "border-pr-red text-white bg-pr-red/15" : "border-zinc-800 text-zinc-400"
+                          i + 1 === level.level ? "border-brand text-ink bg-brand/15" : "border-zinc-800 text-zinc-400"
                         )}
                       >
                         {i + 1}. {l.title} · {l.min.toLocaleString()}

@@ -38,7 +38,7 @@ export default function EncuestaDetailPage() {
 
   return (
     <PageContent className="space-y-6">
-      <button onClick={() => router.back()} className="flex items-center gap-1 text-sm text-zinc-400 hover:text-white -ml-1">
+      <button onClick={() => router.back()} className="flex items-center gap-1 text-sm text-zinc-400 hover:text-ink -ml-1">
         <ChevronLeft className="w-5 h-5" /> Encuestas
       </button>
 

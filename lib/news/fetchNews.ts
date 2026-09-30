@@ -1,6 +1,7 @@
 // lib/news/fetchNews.ts
 // Server-side: pull every source, merge, dedupe and sort newest first.
-import { NEWS_SOURCES, googleNewsFeed, type NewsSource } from "./sources";
+import { DIASPORA_FEED, NEWS_SOURCES, googleNewsFeed, type NewsSource } from "./sources";
+import { classify, municipiosIn } from "./classify";
 import { hashId, parseFeed, type FeedEntry } from "./rss";
 import { sampleNews } from "./sample";
 import type { NewsItem, NewsResponse } from "./types";
@@ -31,6 +32,7 @@ async function fromSource(source: NewsSource) {
     const entries = xml ? parseFeed(xml) : [];
     if (entries.length) return { via: "rss" as const, entries };
   }
+  if (!source.domain) return { via: "none" as const, entries: [] };
   const xml = await getXml(googleNewsFeed(source.domain));
   const entries = (xml ? parseFeed(xml) : []).map((e) => ({
     ...e,
@@ -41,22 +43,27 @@ async function fromSource(source: NewsSource) {
 }
 
 function toItem(source: NewsSource, e: FeedEntry, now: number): NewsItem {
+  const diaspora = source.id === DIASPORA_FEED.id;
+  const title = diaspora ? e.title.replace(/\s+-\s+[^-]+$/, "") : e.title;
+  const excerpt = e.excerpt && e.excerpt !== e.title ? e.excerpt : undefined;
   return {
     id: hashId(e.link),
-    title: e.title,
+    title,
     link: e.link,
     sourceId: source.id,
-    sourceName: source.name,
+    sourceName: diaspora ? e.sourceName ?? source.name : source.name,
     publishedAt: e.publishedAt ?? new Date(now).toISOString(),
-    excerpt: e.excerpt && e.excerpt !== e.title ? e.excerpt : undefined,
+    excerpt,
     image: e.image,
+    section: diaspora ? "Diáspora" : classify(title, excerpt),
+    municipios: municipiosIn(title, excerpt),
   };
 }
 
 export async function fetchNews(): Promise<NewsResponse> {
   const now = Date.now();
   const results = await Promise.all(
-    NEWS_SOURCES.map(async (source) => ({ source, ...(await fromSource(source)) }))
+    [...NEWS_SOURCES, DIASPORA_FEED].map(async (source) => ({ source, ...(await fromSource(source)) }))
   );
 
   const seen = new Set<string>();

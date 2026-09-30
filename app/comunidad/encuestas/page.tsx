@@ -80,7 +80,7 @@ export default function EncuestasPage() {
             <div className="border-t border-zinc-800 px-5 py-3 flex items-center gap-6 text-sm">
               <button
                 onClick={() => like(poll.id)}
-                className={cn("flex items-center gap-1.5", poll.liked ? "text-red-500" : "text-zinc-400 hover:text-white")}
+                className={cn("flex items-center gap-1.5", poll.liked ? "text-red-500" : "text-zinc-400 hover:text-ink")}
               >
                 <Heart className={cn("w-5 h-5", poll.liked && "fill-current")} />
                 <span className="tabular-nums">{poll.likes}</span>

@@ -5,6 +5,8 @@ export const EVENT_CATEGORIES = [
   { id: "juegos", label: "Juegos", emoji: "🏟️" },
   { id: "familia", label: "Familia", emoji: "👨‍👩‍👧" },
   { id: "festivales", label: "Festivales", emoji: "🎉" },
+  { id: "patronales", label: "Patronales", emoji: "⛪" },
+  { id: "nocturna", label: "Vida nocturna", emoji: "🌙" },
 ] as const;
 
 export type EventCategory = (typeof EVENT_CATEGORIES)[number]["id"];
@@ -25,6 +27,10 @@ export interface EventItem {
   priceMax?: number;
   free?: boolean;
   description?: string;
+  /** Puerto Rican event in the States (shown in "Desde afuera" mode). */
+  diaspora?: boolean;
+  /** Dates are a reference, not a confirmed program. */
+  approximate?: boolean;
 }
 
 export interface EventsResponse {

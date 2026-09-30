@@ -67,7 +67,7 @@ export default function PueblosPage() {
                 <p className="text-zinc-400">{pueblo.location}</p>
               </div>
               <div className="text-right">
-                <div className="flex items-center gap-1 text-pr-red">
+                <div className="flex items-center gap-1 text-brand">
                   <Users className="w-5 h-5" />
                   <span className="font-medium">{pueblo.peopleHere}</span>
                 </div>
@@ -82,7 +82,7 @@ export default function PueblosPage() {
               className={`mt-4 w-full py-3 rounded-2xl font-medium transition-all ${
                 pueblo.checkedIn 
                   ? "bg-zinc-800 text-zinc-400" 
-                  : "bg-pr-red text-white hover:brightness-110"
+                  : "bg-brand text-white hover:brightness-110"
               }`}
             >
               {pueblo.checkedIn ? "✓ Ya estoy aquí" : "Check-in ahora"}
