@@ -101,7 +101,7 @@ export default function TemasPage() {
                     {topic.category}
                   </span>
                 </div>
-                <h3 className="font-semibold text-[16px] leading-snug text-white">{topic.title}</h3>
+                <h3 className="font-semibold text-[16px] leading-snug text-ink">{topic.title}</h3>
                 <div className="mt-3">
                   <CommentButton
                     threadId={`tema:${topic.id}`}
@@ -141,7 +141,7 @@ export default function TemasPage() {
                 className={cn(
                   "px-4 py-1.5 rounded-full text-sm border transition-colors",
                   draft.category === cat
-                    ? "bg-pr-red border-pr-red text-white"
+                    ? "bg-brand border-brand text-white"
                     : "bg-zinc-800 border-zinc-700 text-zinc-300 hover:border-zinc-600"
                 )}
               >

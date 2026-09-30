@@ -30,7 +30,7 @@ export default function CreateSheet({
         <div className="p-4">
           <button
             onClick={onAction}
-            className="w-full bg-pr-red hover:bg-red-600 transition-colors py-3.5 rounded-2xl font-semibold active:scale-[0.99]"
+            className="w-full bg-brand hover:brightness-110 text-white transition-all py-3.5 rounded-2xl font-semibold active:scale-[0.99]"
           >
             {actionLabel}
           </button>
@@ -44,4 +44,4 @@ export default function CreateSheet({
 }
 
 export const inputClass =
-  "w-full bg-zinc-800 border border-zinc-700 rounded-2xl px-4 py-3 text-[15px] text-white placeholder-zinc-500 focus:outline-none focus:border-pr-red";
+  "w-full bg-zinc-800 border border-zinc-700 rounded-2xl px-4 py-3 text-[15px] text-ink placeholder-zinc-500 focus:outline-none focus:border-brand";

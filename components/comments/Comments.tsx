@@ -117,7 +117,7 @@ function CommentRow({
       <Avatar name={c.author} src={c.avatar} size={isReply ? 24 : 32} className="mt-0.5" />
       <div className="flex-1 min-w-0 select-none">
         <p className="text-[13px] leading-tight">
-          <span className="font-semibold text-white">{c.author}</span>
+          <span className="font-semibold text-ink">{c.author}</span>
           <span className="text-zinc-500 ml-2">{when}</span>
         </p>
         <p className="text-[14px] leading-snug text-zinc-100 mt-0.5 whitespace-pre-wrap break-words">
@@ -156,7 +156,7 @@ function CommentList({ api }: { api: ThreadApi }) {
   if (api.topLevel.length === 0) {
     return (
       <div className="py-12 text-center">
-        <p className="text-lg font-semibold text-white">Aún no hay comentarios</p>
+        <p className="text-lg font-semibold text-ink">Aún no hay comentarios</p>
         <p className="text-sm text-zinc-500 mt-1">Inicia la conversación.</p>
       </div>
     );
@@ -243,7 +243,7 @@ function Composer({ api }: { api: ThreadApi }) {
           <button
             onClick={api.submit}
             disabled={!api.draft.trim()}
-            className="px-3 py-1.5 text-sm font-semibold text-pr-red disabled:text-zinc-600"
+            className="px-3 py-1.5 text-sm font-semibold text-brand disabled:text-zinc-600"
           >
             Publicar
           </button>
@@ -323,7 +323,7 @@ export function CommentButton({
         e.stopPropagation();
         onClick();
       }}
-      className={cn("flex items-center gap-1.5 text-zinc-400 hover:text-white transition-colors", className)}
+      className={cn("flex items-center gap-1.5 text-zinc-400 hover:text-ink transition-colors", className)}
       aria-label="Comentarios"
     >
       <MessageCircle className="w-5 h-5" />

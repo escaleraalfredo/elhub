@@ -39,7 +39,7 @@ export default function TemaDetailPage() {
 
   return (
     <PageContent className="space-y-6">
-      <button onClick={() => router.back()} className="flex items-center gap-1 text-sm text-zinc-400 hover:text-white -ml-1">
+      <button onClick={() => router.back()} className="flex items-center gap-1 text-sm text-zinc-400 hover:text-ink -ml-1">
         <ChevronLeft className="w-5 h-5" /> Temas
       </button>
 
@@ -50,7 +50,7 @@ export default function TemaDetailPage() {
           <span>· {topic.time}</span>
           <span className="ml-auto px-2.5 py-0.5 bg-zinc-800 rounded-full text-[10px] text-zinc-300">{topic.category}</span>
         </div>
-        <h1 className="text-xl leading-snug font-bold text-white">{topic.title}</h1>
+        <h1 className="text-xl leading-snug font-bold text-ink">{topic.title}</h1>
         {topic.content && <p className="text-zinc-300 leading-relaxed text-[15px] mt-3">{topic.content}</p>}
         <div className="mt-4 pt-3 border-t border-zinc-800">
           <VoteColumn horizontal votes={topic.votes} userVote={topic.userVote} onVote={vote} />

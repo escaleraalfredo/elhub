@@ -1,191 +1,112 @@
+// app/settings/page.tsx
 "use client";
 
-import { User, Bell, Shield, Palette, Moon, Sun, Volume2, Eye, LogOut, Globe } from "lucide-react";
-import { useState, useEffect } from "react";
-import { toast } from "sonner";
-import { PageContent, PageHeader, PageShell } from "@/components/ui/Page";
+import { useSyncExternalStore } from "react";
+import Link from "next/link";
+import { useTheme } from "next-themes";
+import { ChevronRight, Globe, LogIn, Monitor, Moon, Palette, Sun, User } from "lucide-react";
+import { Card, PageContent, PageHeader, PageShell } from "@/components/ui/Page";
+import Avatar from "@/components/ui/Avatar";
 import { usePoints } from "@/lib/points";
+import { updateProfile, useProfile } from "@/lib/profile";
+import { cn } from "@/lib/utils";
+
+const useMounted = () =>
+  useSyncExternalStore(
+    () => () => {},
+    () => true,
+    () => false
+  );
 
 export default function SettingsPage() {
   const { total, level } = usePoints();
-  const [isDarkMode, setIsDarkMode] = useState(true);
-  const [notificationsEnabled, setNotificationsEnabled] = useState(true);
-  const [soundEnabled, setSoundEnabled] = useState(true);
-  const [dataSaver, setDataSaver] = useState(false);
-  const [selectedLanguage, setSelectedLanguage] = useState<"es" | "en">("es");
+  const profile = useProfile();
+  const { theme, setTheme } = useTheme();
+  const mounted = useMounted();
+  const en = profile.lang === "en";
 
-  // Load saved theme on mount
-  useEffect(() => {
-    const savedTheme = localStorage.getItem("theme");
-    if (savedTheme === "light") {
-      setIsDarkMode(false);
-      document.documentElement.classList.remove("dark");
-    } else {
-      setIsDarkMode(true);
-      document.documentElement.classList.add("dark");
-    }
-  }, []);
-
-  const toggleTheme = () => {
-    const newMode = !isDarkMode;
-    setIsDarkMode(newMode);
-
-    if (newMode) {
-      document.documentElement.classList.add("dark");
-      localStorage.setItem("theme", "dark");
-      toast.success("🌙 Modo Oscuro activado");
-    } else {
-      document.documentElement.classList.remove("dark");
-      localStorage.setItem("theme", "light");
-      toast.success("☀️ Modo Claro activado");
-    }
-  };
-
-  const changeLanguage = (lang: "es" | "en") => {
-    setSelectedLanguage(lang);
-    toast.success(lang === "es" ? "Idioma cambiado a Español" : "Language changed to English");
-  };
+  const themes = [
+    { id: "light", label: en ? "Light" : "Claro", icon: Sun },
+    { id: "dark", label: en ? "Dark" : "Oscuro", icon: Moon },
+    { id: "system", label: en ? "System" : "Sistema", icon: Monitor },
+  ];
 
   return (
     <PageShell>
-      <PageHeader title="Configuración" back />
-
+      <PageHeader title={en ? "Settings" : "Configuración"} back />
       <PageContent>
-        {/* Account Section */}
-        <div className="bg-zinc-900 rounded-3xl border border-zinc-800 overflow-hidden">
-          <div className="p-6 border-b border-zinc-800">
-            <div className="flex items-center gap-4">
-              <div className="w-16 h-16 bg-zinc-700 rounded-2xl" />
-              <div>
-                <p className="font-semibold text-lg">@tuusuario</p>
-                <p className="text-zinc-500 text-sm">Nivel {level.level} · {level.title} · {total.toLocaleString()} pts</p>
-              </div>
+        <Card className="divide-y divide-zinc-800">
+          <Link href="/perfil" className="flex items-center gap-4 p-5">
+            <Avatar name={profile.username} size={56} />
+            <div className="flex-1 min-w-0">
+              <p className="font-semibold text-lg">@{profile.username}</p>
+              <p className="text-zinc-500 text-sm">Nivel {level.level} · {level.title} · {total.toLocaleString()} pts</p>
             </div>
-          </div>
-
-          {/* Edit Profile - Now Clickable */}
-          <button 
-            onClick={() => toast.info("Editar perfil se conectará más adelante")}
-            className="w-full px-6 py-4 flex items-center gap-4 hover:bg-zinc-800 transition-all text-left border-b border-zinc-800"
-          >
+            <ChevronRight className="w-5 h-5 text-zinc-500" />
+          </Link>
+          <label className="flex items-center gap-4 px-5 py-4">
             <User className="w-5 h-5 text-zinc-400" />
-            <div className="flex-1">
-              <p className="font-medium">Editar perfil</p>
-              <p className="text-xs text-zinc-500">Foto, nombre, bio y más</p>
-            </div>
-          </button>
-        </div>
+            <span className="flex-1 font-medium">{en ? "Username" : "Usuario"}</span>
+            <input
+              value={profile.username}
+              maxLength={24}
+              onChange={(e) => updateProfile({ username: e.target.value.replace(/[^\w.áéíóúñü]/gi, "").toLowerCase() || "tuusuario" })}
+              className="w-36 text-right bg-transparent text-zinc-300 focus:outline-none"
+            />
+          </label>
+          <Link href="/login" className="flex items-center gap-4 px-5 py-4">
+            <LogIn className="w-5 h-5 text-zinc-400" />
+            <span className="flex-1 font-medium">{en ? "Sign in / create account" : "Entrar o crear cuenta"}</span>
+            <ChevronRight className="w-5 h-5 text-zinc-500" />
+          </Link>
+        </Card>
 
-        {/* Appearance */}
-        <div className="bg-zinc-900 rounded-3xl border border-zinc-800 overflow-hidden">
-          <div className="p-6">
-            <div className="flex items-center gap-4 mb-6">
-              <Palette className="w-5 h-5 text-zinc-400" />
-              <p className="font-medium">Apariencia</p>
-            </div>
-
-            {/* Dark / Light Mode Toggle - Beautiful Version */}
-            <button 
-              onClick={toggleTheme}
-              className="w-full flex items-center justify-between py-4 px-2 hover:bg-zinc-800 transition-all rounded-2xl group text-left"
-            >
-              <div className="flex items-center gap-4">
-                <div className="w-10 h-10 bg-zinc-800 rounded-2xl flex items-center justify-center">
-                  {isDarkMode ? 
-                    <Moon className="w-5 h-5 text-zinc-400" /> : 
-                    <Sun className="w-5 h-5 text-amber-400" />
-                  }
-                </div>
-                <div>
-                  <p className="font-medium text-base">Modo {isDarkMode ? "Oscuro" : "Claro"}</p>
-                  <p className="text-xs text-zinc-500">Cambia la apariencia de toda la app</p>
-                </div>
-              </div>
-
-              {/* Modern Toggle Switch */}
-              <div className={`relative w-14 h-8 rounded-full transition-all duration-300 flex items-center px-1 
-                ${isDarkMode ? "bg-pr-red" : "bg-zinc-700"}`}>
-                <div 
-                  className={`w-6 h-6 bg-white rounded-full shadow-md transition-all duration-300 flex items-center justify-center
-                    ${isDarkMode ? "translate-x-6" : "translate-x-0"}`}
-                >
-                  {isDarkMode ? 
-                    <Moon className="w-3.5 h-3.5 text-zinc-900" /> : 
-                    <Sun className="w-3.5 h-3.5 text-amber-500" />
-                  }
-                </div>
-              </div>
-            </button>
-          </div>
-        </div>
-
-        {/* Language Selector */}
-        <div className="bg-zinc-900 rounded-3xl border border-zinc-800 overflow-hidden">
-          <div className="p-6">
-            <div className="flex items-center gap-4 mb-6">
-              <Globe className="w-5 h-5 text-zinc-400" />
-              <p className="font-medium">Idioma</p>
-            </div>
-
-            <div className="flex gap-3">
+        <Card className="p-5 space-y-3">
+          <p className="flex items-center gap-3 font-medium">
+            <Palette className="w-5 h-5 text-zinc-400" /> {en ? "Appearance" : "Apariencia"}
+          </p>
+          <div className="grid grid-cols-3 gap-2">
+            {themes.map(({ id, label, icon: Icon }) => (
               <button
-                onClick={() => changeLanguage("es")}
-                className={`flex-1 py-4 rounded-2xl border transition-all ${selectedLanguage === "es" ? "bg-pr-red text-white border-pr-red" : "bg-zinc-800 border-zinc-700 text-zinc-300 hover:border-zinc-600"}`}
+                key={id}
+                onClick={() => setTheme(id)}
+                className={cn(
+                  "flex flex-col items-center gap-1.5 rounded-2xl border py-3 text-sm font-medium",
+                  mounted && theme === id ? "border-brand bg-brand/10 text-brand" : "border-zinc-800 text-zinc-300"
+                )}
               >
-                Español
+                <Icon className="w-5 h-5" /> {label}
               </button>
+            ))}
+          </div>
+        </Card>
+
+        <Card className="p-5 space-y-3">
+          <p className="flex items-center gap-3 font-medium">
+            <Globe className="w-5 h-5 text-zinc-400" /> {en ? "Language" : "Idioma"}
+          </p>
+          <div className="grid grid-cols-2 gap-2">
+            {(["es", "en"] as const).map((l) => (
               <button
-                onClick={() => changeLanguage("en")}
-                className={`flex-1 py-4 rounded-2xl border transition-all ${selectedLanguage === "en" ? "bg-pr-red text-white border-pr-red" : "bg-zinc-800 border-zinc-700 text-zinc-300 hover:border-zinc-600"}`}
+                key={l}
+                onClick={() => updateProfile({ lang: l })}
+                className={cn(
+                  "rounded-2xl border py-3 text-sm font-semibold",
+                  profile.lang === l ? "border-brand bg-brand text-white" : "border-zinc-800 text-zinc-300"
+                )}
               >
-                English
+                {l === "es" ? "Español" : "English"}
               </button>
-            </div>
+            ))}
           </div>
-        </div>
+          <p className="text-xs text-zinc-500">
+            {en
+              ? "Menus and screens switch to English; news stays in its original language."
+              : "Cambia menús y pantallas; las noticias se mantienen en su idioma original."}
+          </p>
+        </Card>
 
-        {/* Other Settings */}
-        <div className="bg-zinc-900 rounded-3xl border border-zinc-800 overflow-hidden">
-          <div className="p-6 space-y-2">
-            <button className="w-full flex items-center gap-4 py-4 hover:bg-zinc-800 transition-all rounded-2xl px-4 text-left">
-              <Bell className="w-5 h-5 text-zinc-400" />
-              <div className="flex-1">
-                <p className="font-medium">Notificaciones</p>
-                <p className="text-xs text-zinc-500">Alertas y actualizaciones</p>
-              </div>
-            </button>
-
-            <button className="w-full flex items-center gap-4 py-4 hover:bg-zinc-800 transition-all rounded-2xl px-4 text-left">
-              <Volume2 className="w-5 h-5 text-zinc-400" />
-              <div className="flex-1">
-                <p className="font-medium">Sonidos</p>
-                <p className="text-xs text-zinc-500">Efectos y notificaciones</p>
-              </div>
-            </button>
-
-            <button className="w-full flex items-center gap-4 py-4 hover:bg-zinc-800 transition-all rounded-2xl px-4 text-left">
-              <Eye className="w-5 h-5 text-zinc-400" />
-              <div className="flex-1">
-                <p className="font-medium">Ahorro de datos</p>
-                <p className="text-xs text-zinc-500">Carga menos imágenes con datos móviles</p>
-              </div>
-            </button>
-          </div>
-        </div>
-
-        {/* Version Info */}
-        <div className="text-center text-xs text-zinc-500 pt-6 pb-10">
-          ElHub v1.2.4 • Hecho con ❤️ para la comunidad boricua
-        </div>
-
-        {/* Logout */}
-        <button 
-          onClick={() => toast.info("Cierre de sesión se conectará con Supabase más tarde")}
-          className="w-full bg-zinc-900 border border-zinc-800 hover:bg-red-950/50 transition-all py-4 rounded-3xl text-red-500 font-medium flex items-center justify-center gap-2"
-        >
-          <LogOut className="w-5 h-5" />
-          Cerrar sesión
-        </button>
+        <p className="text-center text-xs text-zinc-500 pt-4">ElHub · Hecho con ❤️ para la comunidad boricua</p>
       </PageContent>
     </PageShell>
   );

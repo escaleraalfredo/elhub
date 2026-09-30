@@ -73,7 +73,7 @@ export default function BottomSheet({
               <button
                 onClick={onClose}
                 aria-label="Cerrar"
-                className="absolute right-3 top-1/2 -translate-y-1/2 p-1 text-zinc-400 hover:text-white"
+                className="absolute right-3 top-1/2 -translate-y-1/2 p-1 text-zinc-400 hover:text-ink"
               >
                 <X className="w-5 h-5" />
               </button>

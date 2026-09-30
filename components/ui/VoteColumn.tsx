@@ -32,14 +32,14 @@ export default function VoteColumn({
           onVote("up");
         }}
         aria-label="Voto positivo"
-        className={cn("p-1 transition-colors", userVote === "up" ? "text-emerald-400" : "text-zinc-500 hover:text-white")}
+        className={cn("p-1 transition-colors", userVote === "up" ? "text-emerald-400" : "text-zinc-500 hover:text-ink")}
       >
         <ArrowBigUp className={cn("w-6 h-6", userVote === "up" && "fill-current")} />
       </button>
       <span
         className={cn(
           "font-bold tabular-nums text-sm",
-          userVote === "up" ? "text-emerald-400" : userVote === "down" ? "text-red-400" : "text-white"
+          userVote === "up" ? "text-emerald-400" : userVote === "down" ? "text-red-400" : "text-ink"
         )}
       >
         {votes}
@@ -50,7 +50,7 @@ export default function VoteColumn({
           onVote("down");
         }}
         aria-label="Voto negativo"
-        className={cn("p-1 transition-colors", userVote === "down" ? "text-red-400" : "text-zinc-500 hover:text-white")}
+        className={cn("p-1 transition-colors", userVote === "down" ? "text-red-400" : "text-zinc-500 hover:text-ink")}
       >
         <ArrowBigDown className={cn("w-6 h-6", userVote === "down" && "fill-current")} />
       </button>
