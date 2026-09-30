@@ -13,7 +13,9 @@ const t = (id: string, name: string, abbr: string, color: string, group = "Tabla
   id, name, short: name.split(" de ")[0], abbr, color, group,
 });
 
-const TEAMS: Record<"bsn" | "lbprc" | "doblea", TeamDef[]> = {
+export type PrLeague = "bsn" | "lbprc" | "doblea" | "lvsf";
+
+const TEAMS: Record<PrLeague, TeamDef[]> = {
   bsn: [
     t("bay", "Vaqueros de Bayamón", "BAY", "1d4ed8"),
     t("san", "Cangrejeros de Santurce", "SAN", "dc2626"),
@@ -48,12 +50,23 @@ const TEAMS: Record<"bsn" | "lbprc" | "doblea", TeamDef[]> = {
     t("man", "Atenienses de Manatí", "MAN", "0369a1", "Sección Oeste"),
     t("sis", "Pescadores de Santa Isabel", "SIS", "0891b2", "Sección Sur"),
   ],
+  lvsf: [
+    t("cag", "Criollas de Caguas", "CAG", "7c3aed"),
+    t("nar", "Changas de Naranjito", "NAR", "ea580c"),
+    t("cor", "Pinkin de Corozal", "COR", "db2777"),
+    t("jun", "Valencianas de Juncos", "JUN", "0f766e"),
+    t("sjn", "Sanjuaneras de la Capital", "SJN", "1d4ed8"),
+    t("pon", "Leonas de Ponce", "PON", "b91c1c"),
+    t("may", "Indias de Mayagüez", "MAY", "dc2626"),
+    t("gua", "Mets de Guaynabo", "GUA", "2563eb"),
+  ],
 };
 
-const SPORT: Record<"bsn" | "lbprc" | "doblea", "basketball" | "baseball"> = {
+const SPORT: Record<PrLeague, "basketball" | "baseball" | "volleyball"> = {
   bsn: "basketball",
   lbprc: "baseball",
   doblea: "baseball",
+  lvsf: "volleyball",
 };
 
 function hash(s: string) {
@@ -86,7 +99,7 @@ function moneyline(pHome: number) {
   return { home: signed(ml(pHome + 0.02)), away: signed(ml(1 - pHome + 0.02)) };
 }
 
-function makeOdds(league: "bsn" | "lbprc" | "doblea", home: TeamDef, away: TeamDef, r: () => number): Odds {
+function makeOdds(league: PrLeague, home: TeamDef, away: TeamDef, r: () => number): Odds {
   const edge = rating(league, home.id) - rating(league, away.id) + 0.15; // home advantage
   const pHome = Math.min(0.78, Math.max(0.22, 0.5 + edge * 0.3));
   if (SPORT[league] === "basketball") {
@@ -98,6 +111,7 @@ function makeOdds(league: "bsn" | "lbprc" | "doblea", home: TeamDef, away: TeamD
       moneyline: moneyline(pHome),
     };
   }
+  if (SPORT[league] === "volleyball") return { provider: "Muestra", moneyline: moneyline(pHome) };
   const homeFav = pHome >= 0.5;
   return {
     provider: "Muestra",
@@ -109,20 +123,21 @@ function makeOdds(league: "bsn" | "lbprc" | "doblea", home: TeamDef, away: TeamD
 
 const START_TIMES = ["19:00", "19:30", "20:00", "20:15", "18:30"];
 
-function pairings(league: "bsn" | "lbprc" | "doblea", date: string) {
+function pairings(league: PrLeague, date: string) {
   const teams = [...TEAMS[league]];
   const r = rng(`${league}:${date}:pairs`);
   for (let i = teams.length - 1; i > 0; i--) {
     const j = Math.floor(r() * (i + 1));
     [teams[i], teams[j]] = [teams[j], teams[i]];
   }
-  const count = league === "bsn" ? 3 : league === "lbprc" ? 3 : 4;
+  const count = league === "doblea" ? 4 : league === "lvsf" ? 2 : 3;
   const out: [TeamDef, TeamDef][] = [];
   for (let i = 0; i + 1 < teams.length && out.length < count; i += 2) out.push([teams[i], teams[i + 1]]);
   return out;
 }
 
-function progressStatus(sport: "basketball" | "baseball", frac: number) {
+function progressStatus(sport: "basketball" | "baseball" | "volleyball", frac: number) {
+  if (sport === "volleyball") return `Set ${Math.min(5, Math.floor(frac * 5) + 1)}`;
   if (sport === "basketball") {
     const q = Math.min(4, Math.floor(frac * 4) + 1);
     const left = Math.max(0, Math.round((1 - (frac * 4 - (q - 1))) * 600));
@@ -132,7 +147,7 @@ function progressStatus(sport: "basketball" | "baseball", frac: number) {
   return `${halfInning % 2 === 0 ? "Alta" : "Baja"} ${Math.floor(halfInning / 2) + 1}`;
 }
 
-export function samplePrGames(league: "bsn" | "lbprc" | "doblea", date: string, now = Date.now()): Game[] {
+export function samplePrGames(league: PrLeague, date: string, now = Date.now()): Game[] {
   const sport = SPORT[league];
   const day = keyToDate(date);
   return pairings(league, date).map(([home, away], i) => {
@@ -140,7 +155,7 @@ export function samplePrGames(league: "bsn" | "lbprc" | "doblea", date: string, 
     const [hh, mm] = START_TIMES[i % START_TIMES.length].split(":").map(Number);
     // PR is UTC-4 all year.
     const start = Date.UTC(day.getUTCFullYear(), day.getUTCMonth(), day.getUTCDate(), hh + 4, mm);
-    const duration = (sport === "basketball" ? 2.25 : 3) * 3600_000;
+    const duration = (sport === "baseball" ? 3 : sport === "volleyball" ? 2 : 2.25) * 3600_000;
     const frac = (now - start) / duration;
     const state: GameState = frac < 0 ? "pre" : frac >= 1 ? "post" : "in";
 
@@ -150,6 +165,13 @@ export function samplePrGames(league: "bsn" | "lbprc" | "doblea", date: string, 
     let hs = Math.max(0, Math.round(base + edge * spread * 0.6 + (r() - 0.5) * spread * 1.4));
     let as = Math.max(0, Math.round(base - edge * spread * 0.6 + (r() - 0.5) * spread * 1.4));
     if (hs === as) hs += sport === "basketball" ? 2 : 1;
+    if (sport === "volleyball") {
+      // Sets won: best of five.
+      const homeWins = hs > as;
+      const loserSets = Math.floor(r() * 3);
+      hs = homeWins ? 3 : loserSets;
+      as = homeWins ? loserSets : 3;
+    }
     if (state === "in") {
       hs = Math.round(hs * frac);
       as = Math.round(as * frac);
@@ -176,8 +198,8 @@ export function samplePrGames(league: "bsn" | "lbprc" | "doblea", date: string, 
   });
 }
 
-export function samplePrStandings(league: "bsn" | "lbprc" | "doblea"): StandingsGroup[] {
-  const games = league === "bsn" ? 24 : league === "lbprc" ? 30 : 20;
+export function samplePrStandings(league: PrLeague): StandingsGroup[] {
+  const games = league === "bsn" ? 24 : league === "lbprc" ? 30 : league === "lvsf" ? 18 : 20;
   const byGroup = new Map<string, StandingsGroup>();
   for (const team of TEAMS[league]) {
     const r = rng(`${league}:${team.id}:record`);
@@ -207,4 +229,57 @@ export function samplePrStandings(league: "bsn" | "lbprc" | "doblea"): Standings
     });
   }
   return groups;
+}
+
+// ---------------------------------------------------------------- Boxing
+
+const BOXERS = [
+  ["Luis “El Torito” Rivera (ejemplo)", "Carlos Méndez (ejemplo)", "Peso Pluma"],
+  ["Javier Ortiz (ejemplo)", "Miguel Santos (ejemplo)", "Peso Ligero"],
+  ["Ana “La Fiera” Colón (ejemplo)", "Sofía Díaz (ejemplo)", "Peso Mosca"],
+  ["Pedro Vélez (ejemplo)", "Andrés Ruiz (ejemplo)", "Peso Súper Gallo"],
+];
+
+/** Next Saturday's sample card in Bayamón, plus the previous one with results. */
+export function sampleBoxing(date: string, now = Date.now()): Game[] {
+  const day = keyToDate(date);
+  const dow = day.getUTCDay();
+  const nextSat = new Date(day.getTime() + ((6 - dow + 7) % 7) * 86400000);
+  const lastSat = new Date(nextSat.getTime() - 7 * 86400000);
+  const card = (sat: Date, label: string) =>
+    BOXERS.map(([a, b, weight], i) => {
+      const start = Date.UTC(sat.getUTCFullYear(), sat.getUTCMonth(), sat.getUTCDate(), 24 + 4 - i, 0);
+      const state: GameState = now < start ? "pre" : now < start + 3600_000 ? "in" : "post";
+      const r = rng(`box:${sat.toISOString()}:${i}`);
+      const aWins = r() > 0.5;
+      const mk = (name: string): TeamRef => ({
+        id: name,
+        name,
+        short: name.replace(/ \(ejemplo\)/, ""),
+        abbr: name.split(/\s+/).map((p) => p[0]).join("").replace(/[^A-Z]/g, "").slice(0, 2),
+        color: "475569",
+      });
+      const odds: Odds = { provider: "Muestra", moneyline: aWins ? { away: "-160", home: "+135" } : { away: "+120", home: "-145" } };
+      return {
+        id: `boxeo-${sat.toISOString().slice(0, 10)}-${i}`,
+        league: "boxeo" as LeagueId,
+        startTime: new Date(start).toISOString(),
+        state,
+        status:
+          state === "pre"
+            ? new Date(start).toLocaleDateString("es-PR", { weekday: "short", day: "numeric", month: "short", timeZone: "America/Puerto_Rico" })
+            : state === "in"
+              ? `R${1 + Math.floor(r() * 8)}`
+              : `Final · ${["KO", "TKO", "Decisión unánime", "Decisión dividida"][Math.floor(r() * 4)]}`,
+        away: { team: mk(a), record: `${12 + i}-${i}-0`, winner: state === "post" ? aWins : undefined },
+        home: { team: mk(b), record: `${10 + i}-${2 + i}-1`, winner: state === "post" ? !aWins : undefined },
+        group: label,
+        detail: `${weight}${i === 0 ? " · Estelar" : ""}`,
+        odds: state === "post" ? undefined : odds,
+      };
+    });
+  return [
+    ...card(nextSat, "Noche de boxeo boricua · Coliseo Rubén Rodríguez (ejemplo)"),
+    ...card(lastSat, "Cartelera anterior · Coliseo Pachín Vicéns (ejemplo)"),
+  ];
 }

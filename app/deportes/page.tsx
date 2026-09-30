@@ -9,6 +9,9 @@ import { GameHeader } from "@/components/sports/GameInteractions";
 import { CommentsSheet } from "@/components/comments/Comments";
 import Sponsored from "@/components/ui/Sponsored";
 import { useGameInteractions } from "@/lib/sports/interactions";
+import { isFavoriteGame, useFavoriteResults } from "@/lib/sports/favorites";
+import { useProfile } from "@/lib/profile";
+import { Star } from "lucide-react";
 import { award } from "@/lib/points";
 import { LEAGUES, PR_TZ, dateKey, keyToDate, leagueById, shiftKey } from "@/lib/sports/leagues";
 import type { Game, LeagueData, LeagueId } from "@/lib/sports/types";
@@ -18,7 +21,7 @@ import { cn } from "@/lib/utils";
 type View = "scores" | "standings" | "playoffs" | "odds";
 
 function viewsFor(league: LeagueId): { label: string; value: View }[] {
-  if (league === "ufc") return [{ label: "Peleas", value: "scores" }, { label: "Líneas", value: "odds" }];
+  if (league === "ufc" || league === "boxeo") return [{ label: "Peleas", value: "scores" }, { label: "Líneas", value: "odds" }];
   const base: { label: string; value: View }[] = [
     { label: "Marcadores", value: "scores" },
     { label: "Posiciones", value: "standings" },
@@ -52,14 +55,14 @@ function DateStrip({ value, onChange, today }: { value: string; onChange: (k: st
             onClick={() => onChange(k)}
             className={cn(
               "relative shrink-0 min-w-[2.75rem] flex-1 py-2 flex flex-col items-center",
-              active ? "text-white" : "text-zinc-500 hover:text-zinc-300"
+              active ? "text-ink" : "text-zinc-500 hover:text-zinc-300"
             )}
           >
             <span className="text-[10px] font-bold tracking-wide">{label}</span>
             <span className="text-base font-bold tabular-nums leading-tight">
               {d.toLocaleDateString("es-PR", { day: "numeric", timeZone: PR_TZ })}
             </span>
-            {active && <span className="absolute bottom-0 left-2 right-2 h-0.5 rounded-full bg-pr-red" />}
+            {active && <span className="absolute bottom-0 left-2 right-2 h-0.5 rounded-full bg-brand" />}
           </button>
         );
       })}
@@ -84,7 +87,11 @@ export default function DeportesPage() {
   const meta = leagueById(league)!;
   const views = viewsFor(league);
   const activeView: View = views.some((v) => v.value === view) ? view : "scores";
-  const showDates = league !== "ufc" && (activeView === "scores" || activeView === "odds");
+  const fights = league === "ufc" || league === "boxeo";
+  const showDates = !fights && (activeView === "scores" || activeView === "odds");
+  const { teams } = useProfile();
+  const [favOnly, setFavOnly] = useState(false);
+  useFavoriteResults(current?.games);
   const oddsGames = current?.games.filter((g) => g.odds && g.state !== "post") ?? [];
   const [openGame, setOpenGame] = useState<Game | null>(null);
 
@@ -99,8 +106,8 @@ export default function DeportesPage() {
     });
   }, [current, picks]);
 
-  const scoreList = (games: Game[]) =>
-    games.map((g, i) => (
+  const scoreList = (all: Game[]) =>
+    (favOnly ? all.filter((g) => isFavoriteGame(g, teams)) : [...all].sort((a, b) => Number(isFavoriteGame(b, teams)) - Number(isFavoriteGame(a, teams)))).map((g, i) => (
       <Fragment key={g.id}>
         <ScoreCard game={g} onOpen={() => setOpenGame(g)} />
         {i === 2 && <Sponsored placement="deportes" />}
@@ -118,7 +125,7 @@ export default function DeportesPage() {
               className={cn(
                 "shrink-0 flex items-center gap-1.5 px-3.5 py-1.5 rounded-full text-sm font-semibold transition-colors",
                 l.id === league
-                  ? "bg-pr-red text-white"
+                  ? "bg-brand text-white"
                   : "bg-zinc-900 text-zinc-300 border border-zinc-800 hover:bg-zinc-800"
               )}
             >
@@ -134,15 +141,15 @@ export default function DeportesPage() {
       <PageContent>
         <div className="flex items-center justify-between px-1">
           <div>
-            <h1 className="text-lg font-bold text-white leading-tight">{meta.fullName}</h1>
+            <h1 className="text-lg font-bold text-ink leading-tight">{meta.fullName}</h1>
             <p className="text-xs text-zinc-500">
               {showDates &&
                 `${keyToDate(date).toLocaleDateString("es-PR", { weekday: "long", day: "numeric", month: "long", timeZone: PR_TZ })} · `}
               {current?.source === "espn" ? "Datos: ESPN" : current?.source === "sample" ? "Datos de ejemplo" : " "}
-              {live && <span className="text-red-500 font-semibold"> · Actualizando en vivo</span>}
+              {live && <span className="text-coral font-semibold"> · Actualizando en vivo</span>}
             </p>
           </div>
-          <button onClick={refresh} aria-label="Actualizar" className="p-2 text-zinc-400 hover:text-white">
+          <button onClick={refresh} aria-label="Actualizar" className="p-2 text-zinc-400 hover:text-ink">
             <RefreshCw className={cn("w-4 h-4", loading && "animate-spin")} />
           </button>
         </div>
@@ -161,10 +168,10 @@ export default function DeportesPage() {
           (current.games.length === 0 ? (
             <EmptyState
               icon={meta.emoji}
-              title={league === "ufc" ? "No hay carteleras cercanas" : "No hay juegos este día"}
-              subtitle={league === "ufc" ? undefined : "Prueba otra fecha en la barra de arriba."}
+              title={fights ? "No hay carteleras cercanas" : "No hay juegos este día"}
+              subtitle={fights ? undefined : "Prueba otra fecha en la barra de arriba."}
             />
-          ) : league === "ufc" ? (
+          ) : fights ? (
             byGroup(current.games).map(([group, games]) => (
               <section key={group} className="space-y-3">
                 <h2 className="px-1 text-sm font-bold text-zinc-300">
@@ -178,7 +185,17 @@ export default function DeportesPage() {
             ))
           ) : (
             <div className="space-y-3">
-              <p className="px-1 text-xs text-zinc-500">Toca un juego para pronosticar, reaccionar y comentar.</p>
+              <div className="flex items-center justify-between gap-2 px-1">
+                <p className="text-xs text-zinc-500">Toca un juego para pronosticar, reaccionar, comentar o seguir un equipo.</p>
+                {teams.length > 0 && (
+                  <button
+                    onClick={() => setFavOnly(!favOnly)}
+                    className={`shrink-0 flex items-center gap-1 px-2.5 py-1 rounded-full text-[11px] font-semibold border ${favOnly ? "border-yellow-400 text-yellow-400" : "border-zinc-700 text-zinc-400"}`}
+                  >
+                    <Star className="w-3 h-3" /> Mis equipos
+                  </button>
+                )}
+              </div>
               {scoreList(current.games)}
             </div>
           ))}

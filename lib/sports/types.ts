@@ -1,5 +1,5 @@
 // lib/sports/types.ts
-export type LeagueId = "nba" | "mlb" | "ufc" | "bsn" | "lbprc" | "doblea";
+export type LeagueId = "nba" | "mlb" | "ufc" | "bsn" | "lbprc" | "doblea" | "lvsf" | "boxeo";
 export type GameState = "pre" | "in" | "post";
 
 export interface TeamRef {

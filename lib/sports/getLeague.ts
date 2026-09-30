@@ -2,7 +2,7 @@
 import { espnMlbPostseason, espnScoreboard, espnStandings, espnUfc } from "./espn";
 import { projectedMlbBracket } from "./bracket";
 import { leagueById, shiftKey } from "./leagues";
-import { samplePrGames, samplePrStandings } from "./prLeagues";
+import { sampleBoxing, samplePrGames, samplePrStandings, type PrLeague } from "./prLeagues";
 import type { LeagueData, LeagueId } from "./types";
 
 const PR_NOTE =
@@ -47,7 +47,19 @@ export async function getLeague(id: LeagueId, date: string): Promise<LeagueData>
     };
   }
 
-  const pr = id as "bsn" | "lbprc" | "doblea";
+  if (id === "boxeo") {
+    return {
+      league: id,
+      date,
+      games: sampleBoxing(date),
+      standings: [],
+      source: "sample",
+      note: "Datos de ejemplo: todavía no hay un feed público de carteleras de boxeo en PR. Los nombres son ficticios.",
+      updatedAt,
+    };
+  }
+
+  const pr = id as PrLeague;
   return {
     league: id,
     date,

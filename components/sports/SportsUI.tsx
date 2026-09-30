@@ -14,10 +14,10 @@ export { TeamLogo };
 function StatusPill({ game }: { game: Game }) {
   if (game.state === "in") {
     return (
-      <span className="flex items-center gap-1.5 font-bold text-red-500">
+      <span className="flex items-center gap-1.5 font-bold text-coral">
         <span className="relative flex w-2 h-2">
-          <span className="absolute inline-flex h-full w-full rounded-full bg-red-500 opacity-75 animate-ping" />
-          <span className="relative inline-flex w-2 h-2 rounded-full bg-red-500" />
+          <span className="absolute inline-flex h-full w-full rounded-full bg-coral opacity-75 animate-ping" />
+          <span className="relative inline-flex w-2 h-2 rounded-full bg-coral" />
         </span>
         EN VIVO <span className="text-zinc-300 font-semibold">· {game.status}</span>
       </span>
@@ -33,13 +33,13 @@ function TeamLine({ side, game }: { side: GameSide; game: Game }) {
     <div className="flex items-center gap-3 px-4 py-2">
       <TeamLogo team={side.team} size={28} />
       <div className="flex-1 min-w-0">
-        <p className={cn("font-semibold text-[15px] truncate", lost ? "text-zinc-500" : "text-white")}>{side.team.name}</p>
+        <p className={cn("font-semibold text-[15px] truncate", lost ? "text-zinc-500" : "text-ink")}>{side.team.name}</p>
         {side.record && <p className="text-[11px] text-zinc-500">{side.record}</p>}
       </div>
       {side.score !== undefined && (
-        <span className={cn("text-2xl font-bold tabular-nums", lost ? "text-zinc-500" : "text-white")}>{side.score}</span>
+        <span className={cn("text-2xl font-bold tabular-nums", lost ? "text-zinc-500" : "text-ink")}>{side.score}</span>
       )}
-      <span className={cn("w-2 text-xs", side.winner ? "text-white" : "text-transparent")}>◀</span>
+      <span className={cn("w-2 text-xs", side.winner ? "text-ink" : "text-transparent")}>◀</span>
     </div>
   );
 }
@@ -48,7 +48,7 @@ export function ScoreCard({ game, onOpen }: { game: Game; onOpen?: () => void })
   const o = game.odds;
   const right = game.detail ?? game.broadcast;
   return (
-    <Card className={cn(game.state === "in" && "border-red-500/40")} onClick={onOpen}>
+    <Card className={cn(game.state === "in" && "border-coral/50")} onClick={onOpen}>
       <div className="flex items-center justify-between px-4 pt-3 pb-1 text-xs">
         <StatusPill game={game} />
         {right && <span className="text-zinc-500 truncate ml-3">{right}</span>}
@@ -79,7 +79,7 @@ export function StandingsTable({ group, showHeader = true }: { group: StandingsG
   return (
     <Card>
       {showHeader && group.name && (
-        <div className="px-4 pt-3 pb-2 text-sm font-bold text-white">{group.name}</div>
+        <div className="px-4 pt-3 pb-2 text-sm font-bold text-ink">{group.name}</div>
       )}
       <div className={cn(cols, "px-4 py-2 text-[10px] font-bold uppercase tracking-wide text-zinc-500 border-b border-zinc-800")}>
         <span>#</span>
@@ -96,7 +96,7 @@ export function StandingsTable({ group, showHeader = true }: { group: StandingsG
             <span className="text-zinc-500 text-xs">{i + 1}</span>
             <span className="flex items-center gap-2 min-w-0">
               <TeamLogo team={row.team} size={20} />
-              <span className="font-semibold text-white truncate">{row.team.short ?? row.team.name}</span>
+              <span className="font-semibold text-ink truncate">{row.team.short ?? row.team.name}</span>
             </span>
             <span className="text-right text-zinc-200">{row.w}</span>
             <span className="text-right text-zinc-200">{row.l}</span>
@@ -120,7 +120,7 @@ export function StandingsTable({ group, showHeader = true }: { group: StandingsG
 function LineBox({ top, bottom }: { top?: string; bottom?: string }) {
   return (
     <div className="rounded-xl bg-zinc-800 py-1.5 text-center min-h-[2.5rem] flex flex-col justify-center">
-      <span className="text-sm font-bold text-white tabular-nums">{top ?? "—"}</span>
+      <span className="text-sm font-bold text-ink tabular-nums">{top ?? "—"}</span>
       {bottom && <span className="text-[10px] text-zinc-400 tabular-nums">{bottom}</span>}
     </div>
   );
@@ -169,7 +169,7 @@ function BracketTeam({ side }: { side: BracketSide }) {
       ) : (
         <span className="w-5 h-5 rounded-full border border-dashed border-zinc-700 shrink-0" />
       )}
-      <span className={cn("flex-1 text-[13px] truncate", side.winner ? "font-bold text-white" : "text-zinc-200")}>
+      <span className={cn("flex-1 text-[13px] truncate", side.winner ? "font-bold text-ink" : "text-zinc-200")}>
         {side.team ? side.team.abbr : "Por definir"}
       </span>
       {side.wins !== undefined && <span className="text-sm font-bold tabular-nums">{side.wins}</span>}
