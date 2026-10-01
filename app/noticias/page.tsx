@@ -116,7 +116,7 @@ export default function NoticiasPage() {
             onClick={() => setTown(town === profile.pueblo ? "" : profile.pueblo)}
             className={cn(
               "shrink-0 flex items-center gap-1 px-3 py-1.5 rounded-full text-xs font-semibold border",
-              town === profile.pueblo ? "bg-ink text-zinc-950 border-ink" : "border-transparent bg-zinc-900 text-zinc-300"
+              town === profile.pueblo ? "bg-brand text-white border-brand" : "border-transparent bg-zinc-900 text-zinc-300"
             )}
           >
             <MapPin className="w-3.5 h-3.5" /> Mi pueblo
@@ -207,7 +207,7 @@ export default function NoticiasPage() {
                         </div>
                         <h3 className="mt-1.5 text-[15px] font-semibold leading-snug text-ink line-clamp-3">{item.title}</h3>
                       </div>
-                      <div className="relative w-20 h-20 rounded-2xl overflow-hidden shrink-0"><Artwork seed={item.id} kind={item.section} emoji={SECTION_EMOJI[item.section]} image={item.image} className="[&>span]:text-[56px] [&>span]:-right-2 [&>span]:-bottom-3" /></div>
+                      <div className="relative w-20 h-20 rounded-lg overflow-hidden shrink-0"><Artwork seed={item.id} kind={item.section} emoji={SECTION_EMOJI[item.section]} image={item.image} className="[&>span]:text-[56px] [&>span]:-right-2 [&>span]:-bottom-3" /></div>
                     </a>
                     {actions(item)}
                   </article>

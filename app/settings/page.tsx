@@ -71,7 +71,7 @@ export default function SettingsPage() {
                 key={id}
                 onClick={() => setTheme(id)}
                 className={cn(
-                  "flex flex-col items-center gap-1.5 rounded-2xl border py-3 text-sm font-medium",
+                  "flex flex-col items-center gap-1.5 rounded-lg border py-3 text-sm font-medium",
                   mounted && theme === id ? "border-brand bg-brand/10 text-brand" : "border-zinc-800 text-zinc-300"
                 )}
               >
@@ -91,8 +91,8 @@ export default function SettingsPage() {
                 key={l}
                 onClick={() => updateProfile({ lang: l })}
                 className={cn(
-                  "rounded-2xl border py-3 text-sm font-semibold",
-                  profile.lang === l ? "border-ink bg-ink text-zinc-950" : "border-zinc-800 text-zinc-300"
+                  "rounded-lg border py-3 text-sm font-semibold",
+                  profile.lang === l ? "border-brand bg-brand text-white" : "border-zinc-800 text-zinc-300"
                 )}
               >
                 {l === "es" ? "Español" : "English"}

@@ -128,7 +128,7 @@ export default function ShareButton({
                   // cancelled
                 }
               }}
-              className="w-full rounded-2xl bg-zinc-800 py-3 text-sm font-semibold"
+              className="w-full rounded-lg bg-zinc-800 py-3 text-sm font-semibold"
             >
               Más opciones…
             </button>

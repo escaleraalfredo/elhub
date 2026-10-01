@@ -58,7 +58,7 @@ export default function EventPoster({
   };
 
   return (
-    <div className="rounded-[24px] overflow-hidden bg-zinc-900">
+    <div className="rounded-lg overflow-hidden bg-zinc-900">
       <div
         role="button"
         tabIndex={0}
@@ -68,7 +68,7 @@ export default function EventPoster({
       >
         <Artwork seed={e.id} kind={e.category} emoji={cat.emoji} image={e.image} />
         <div className="absolute inset-0 bg-gradient-to-t from-black/85 via-black/20 to-transparent" />
-        <span className="absolute top-3 left-3 glass rounded-full px-2.5 py-1 text-[11px] font-bold tracking-wide text-white">
+        <span className="absolute top-3 left-3 bg-brand rounded-sm px-2 py-0.5 font-display text-[13px] font-bold tracking-wider text-white">
           {eventDateLabel(e)}
         </span>
         <button

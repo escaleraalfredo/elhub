@@ -125,7 +125,7 @@ export default function DeportesPage() {
               className={cn(
                 "shrink-0 flex items-center gap-1.5 px-3.5 py-1.5 rounded-full text-sm font-semibold transition-colors",
                 l.id === league
-                  ? "bg-ink text-zinc-950"
+                  ? "bg-brand text-white"
                   : "bg-zinc-900 text-zinc-300 hover:bg-zinc-800"
               )}
             >

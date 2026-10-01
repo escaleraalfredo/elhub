@@ -3,7 +3,7 @@
 
 import { useEffect } from "react";
 import Link from "next/link";
-import { Bell } from "lucide-react";
+import { Bell, Search } from "lucide-react";
 import Avatar from "@/components/ui/Avatar";
 import { registerVisit, usePoints } from "@/lib/points";
 import { useProfile } from "@/lib/profile";
@@ -20,38 +20,30 @@ export default function GlobalHeader() {
     registerVisit();
   }, []);
 
-  const ring = Math.round(level.progress * 100);
-
   return (
-    <header className="sticky top-0 z-50 glass pt-[env(safe-area-inset-top)]">
-      <div className="max-w-md mx-auto h-14 px-4 flex items-center justify-between">
-        <Link href="/" className="flex items-center gap-2 pressable" aria-label="ElHub inicio">
-          <span className="relative w-8 h-8 rounded-[10px] bg-accent-gradient overflow-hidden flex items-center justify-center font-display font-extrabold text-white text-lg shadow-lg shadow-brand/30">
-            E
-            <span className="absolute bottom-0 inset-x-0 h-[3px] flag-stripe" />
+    <header className="sticky top-0 z-50 bg-[var(--bar)] pt-[env(safe-area-inset-top)] border-b border-zinc-800">
+      <div className="max-w-md mx-auto h-12 px-4 flex items-center justify-between">
+        <Link href="/" className="pressable" aria-label="ElHub inicio">
+          <span className="font-display italic font-extrabold text-[26px] leading-none tracking-wide">
+            EL<span className="text-brand">HUB</span>
           </span>
-          <span className="font-display font-extrabold text-xl tracking-tight">ElHub</span>
         </Link>
 
-        <div className="flex items-center gap-1">
-          <Link href="/utilidades/clima" aria-label="Alertas" className="relative p-2 text-zinc-300 pressable">
-            <Bell className="w-6 h-6" />
+        <div className="flex items-center gap-1 text-zinc-400">
+          <Link href="/noticias" aria-label="Buscar noticias" className="p-2 pressable">
+            <Search className="w-5 h-5" />
+          </Link>
+          <Link href="/utilidades/clima" aria-label="Alertas" className="relative p-2 pressable">
+            <Bell className="w-5 h-5" />
             {alerts > 0 && (
-              <span className="absolute top-1.5 right-1.5 min-w-4 h-4 px-1 rounded-full bg-brand text-[10px] font-bold text-white flex items-center justify-center">
+              <span className="absolute top-1 right-1 min-w-4 h-4 px-1 rounded-full bg-brand text-[10px] font-bold text-white flex items-center justify-center">
                 {alerts}
               </span>
             )}
           </Link>
           <Link href="/perfil" aria-label={`Tu perfil · nivel ${level.level}`} className="relative pressable ml-1">
-            <span
-              className="block rounded-full p-[2px]"
-              style={{ background: `conic-gradient(var(--brand) ${ring}%, var(--color-zinc-700) ${ring}% 100%)` }}
-            >
-              <span className="block rounded-full p-[2px] bg-zinc-950">
-                <Avatar name={username} size={30} />
-              </span>
-            </span>
-            <span className="absolute -bottom-1 -right-1 min-w-[18px] h-[18px] px-1 rounded-full bg-zinc-950 border border-zinc-700 text-[10px] font-bold flex items-center justify-center">
+            <Avatar name={username} size={28} />
+            <span className="absolute -bottom-1 -right-1.5 min-w-[16px] h-4 px-1 rounded-sm bg-brand text-[9px] font-bold text-white flex items-center justify-center">
               {level.level}
             </span>
           </Link>

@@ -22,7 +22,7 @@ export default function AlertBanner() {
     : `${nearStorm!.kind} ${nearStorm!.name} a ${nearStorm!.distanceKm.toLocaleString()} km de Puerto Rico`;
 
   return (
-    <div className="sticky top-[calc(3.5rem+env(safe-area-inset-top))] z-40 bg-red-600 text-white">
+    <div className="sticky top-[calc(3rem+env(safe-area-inset-top))] z-40 bg-red-600 text-white">
       <div className="max-w-md mx-auto flex items-center gap-2 px-4 py-2.5">
         <AlertTriangle className="w-5 h-5 shrink-0" />
         <Link href="/utilidades/clima" className="flex-1 min-w-0 text-sm font-semibold leading-tight">

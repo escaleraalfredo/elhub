@@ -179,7 +179,7 @@ function BracketTeam({ side }: { side: BracketSide }) {
 
 function SeriesCard({ s }: { s: BracketSeries }) {
   return (
-    <div className="rounded-2xl bg-zinc-900 py-1">
+    <div className="rounded-lg bg-zinc-900 py-1">
       <BracketTeam side={s.top} />
       <BracketTeam side={s.bottom} />
       {s.summary && <p className="px-3 pb-1 text-[10px] text-zinc-500 truncate">{s.summary}</p>}

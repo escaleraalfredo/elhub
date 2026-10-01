@@ -44,7 +44,7 @@ function Post({ post, onComments }: { post: XPost; onComments: () => void }) {
         <div className="mt-1">
           <PostText text={post.text} />
         </div>
-        <SafeImg src={post.image} alt="" className="mt-3 w-full max-h-80 object-cover rounded-2xl border border-zinc-800" />
+        <SafeImg src={post.image} alt="" className="mt-3 w-full max-h-80 object-cover rounded-lg border border-zinc-800" />
         <div className="flex items-center gap-8 mt-3 text-zinc-400">
           <CommentButton threadId={`x:${post.id}`} onClick={onComments} />
           <a

@@ -26,7 +26,7 @@ export default function PollOptions({ poll, onVote }: { poll: Poll; onVote: (opt
               onVote(o.id);
             }}
             className={cn(
-              "relative w-full overflow-hidden rounded-2xl border text-left px-4 py-3 transition-colors",
+              "relative w-full overflow-hidden rounded-lg border text-left px-4 py-3 transition-colors",
               voted ? (mine ? "border-brand" : "border-zinc-800") : "border-zinc-700 hover:border-brand active:scale-[0.99]"
             )}
           >

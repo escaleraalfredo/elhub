@@ -37,7 +37,7 @@ function Grid({ items }: { items: Item[] }) {
     <div className="grid grid-cols-4 gap-3">
       {items.map(({ href, label, icon: Icon, color }) => (
         <Link key={href} href={href} className="flex flex-col items-center gap-1.5 text-center">
-          <span className={cn("w-14 h-14 rounded-2xl flex items-center justify-center text-white shadow-sm", color)}>
+          <span className={cn("w-14 h-14 rounded-lg flex items-center justify-center text-white shadow-sm", color)}>
             <Icon className="w-6 h-6" />
           </span>
           <span className="text-[11px] font-medium leading-tight text-zinc-300">
@@ -78,7 +78,7 @@ export default function MasPage() {
                   <button
                     key={l}
                     onClick={() => updateProfile({ lang: l })}
-                    className={cn("px-3 py-1 rounded-full", profile.lang === l ? "bg-ink text-zinc-950" : "text-zinc-400")}
+                    className={cn("px-3 py-1 rounded-full", profile.lang === l ? "bg-brand text-white" : "text-zinc-400")}
                   >
                     {l === "es" ? "Español" : "English"}
                   </button>
@@ -104,7 +104,7 @@ export default function MasPage() {
                   value={profile.diasporaCity}
                   onChange={(e) => updateProfile({ diasporaCity: e.target.value })}
                   placeholder={lang === "en" ? "Where do you live? (e.g. Orlando)" : "¿Dónde vives? (ej. Orlando)"}
-                  className="w-full bg-zinc-800 border border-zinc-700 rounded-2xl px-4 py-2.5 text-sm focus:outline-none focus:border-brand"
+                  className="w-full bg-zinc-800 border border-zinc-700 rounded-lg px-4 py-2.5 text-sm focus:outline-none focus:border-brand"
                 />
               )}
             </div>

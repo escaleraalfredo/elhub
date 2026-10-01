@@ -79,7 +79,7 @@ export default function PueblosPage() {
 
             <button
               onClick={() => handleCheckIn(pueblo.id)}
-              className={`mt-4 w-full py-3 rounded-2xl font-medium transition-all ${
+              className={`mt-4 w-full py-3 rounded-lg font-medium transition-all ${
                 pueblo.checkedIn 
                   ? "bg-zinc-800 text-zinc-400" 
                   : "bg-accent-gradient text-white"
