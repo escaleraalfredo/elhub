@@ -12,9 +12,9 @@
  *   zinc-700 borders · zinc-600…100 text from faint to strong · ink = main text.
  */
 /*
- * ElHub palette. Dark-first, premium, event-app feel (think FOMO / Dice):
- * near-black surfaces without borders, a sunset coral→pink accent and
- * ocean blue for info. The zinc scale is remapped per theme:
+ * ElHub palette — sports-network style (ESPN / theScore): deep navy
+ * surfaces, one red accent for live and active states, condensed type.
+ * The zinc scale is remapped per theme:
  *   zinc-950 page · zinc-900 cards · zinc-800 raised/fills · zinc-700 lines ·
  *   zinc-600…100 text from faint to strong · ink = main text.
  */
@@ -22,57 +22,59 @@
 :root {
   color-scheme: dark;
   --ink: #ffffff;
-  --brand: #ff5a4e; /* sunset coral */
-  --brand-2: #ff3d7f; /* gradient end: hot pink */
-  --coral: #ff7a45;
-  --palm: #34d399;
-  --ocean: #2f9bff;
+  --brand: #ff3b3b; /* network red */
+  --brand-2: #d91f2b;
+  --coral: #ff3b3b; /* live */
+  --palm: #2fd47e;
+  --ocean: #3d8bff;
   --flag-red: #e92228;
   --flag-blue: #0050b5;
-  --glass: rgba(18, 18, 20, 0.72);
+  --glass: rgba(17, 26, 43, 0.96);
+  --bar: #111a2b;
 
-  --color-zinc-950: #050506;
-  --color-zinc-900: #131316;
-  --color-zinc-800: #1d1d22;
-  --color-zinc-700: #2a2a31;
-  --color-zinc-600: #4a4a54;
-  --color-zinc-500: #7c7c88;
-  --color-zinc-400: #a3a3ae;
-  --color-zinc-300: #cacad2;
-  --color-zinc-200: #e3e3e9;
-  --color-zinc-100: #f3f3f6;
+  --color-zinc-950: #0b111d;
+  --color-zinc-900: #152036;
+  --color-zinc-800: #1c2a44;
+  --color-zinc-700: #263752;
+  --color-zinc-600: #40506d;
+  --color-zinc-500: #7586a3;
+  --color-zinc-400: #9fb0cc;
+  --color-zinc-300: #c6d1e3;
+  --color-zinc-200: #e0e7f1;
+  --color-zinc-100: #f1f4f9;
 
-  --color-emerald-400: #34d399;
-  --color-sky-400: #5ab4ff;
-  --color-yellow-400: #facc15;
-  --color-orange-400: #fb923c;
+  --color-emerald-400: #2fd47e;
+  --color-sky-400: #5ea2ff;
+  --color-yellow-400: #ffc933;
+  --color-orange-400: #ff8a3d;
 }
 
 .light {
   color-scheme: light;
-  --ink: #0d0d10;
-  --brand: #f0463a;
-  --brand-2: #e8266b;
-  --coral: #ea6a2e;
-  --palm: #16a36a;
-  --ocean: #1373d6;
-  --glass: rgba(255, 255, 255, 0.78);
+  --ink: #0b1220;
+  --brand: #e01e2b;
+  --brand-2: #b3121d;
+  --coral: #e01e2b;
+  --palm: #11935a;
+  --ocean: #1667d9;
+  --glass: rgba(255, 255, 255, 0.97);
+  --bar: #ffffff;
 
-  --color-zinc-950: #f4f4f6;
+  --color-zinc-950: #eef1f6;
   --color-zinc-900: #ffffff;
-  --color-zinc-800: #ececf0;
-  --color-zinc-700: #dcdce2;
-  --color-zinc-600: #aeaeb8;
-  --color-zinc-500: #767680;
-  --color-zinc-400: #5c5c66;
-  --color-zinc-300: #3f3f47;
-  --color-zinc-200: #2a2a31;
-  --color-zinc-100: #18181c;
+  --color-zinc-800: #e6eaf1;
+  --color-zinc-700: #d3d9e4;
+  --color-zinc-600: #a3adbf;
+  --color-zinc-500: #67728a;
+  --color-zinc-400: #4d5870;
+  --color-zinc-300: #343e55;
+  --color-zinc-200: #222b40;
+  --color-zinc-100: #121a2c;
 
-  --color-emerald-400: #16a36a;
-  --color-sky-400: #1373d6;
-  --color-yellow-400: #d99a00;
-  --color-orange-400: #e0661f;
+  --color-emerald-400: #11935a;
+  --color-sky-400: #1667d9;
+  --color-yellow-400: #c98f00;
+  --color-orange-400: #d9601a;
 }
 
 body {
@@ -86,7 +88,18 @@ h2,
 h3,
 .font-display {
   font-family: var(--font-display), var(--font-inter), system-ui, sans-serif;
-  letter-spacing: -0.01em;
+  letter-spacing: 0.005em;
+}
+
+/* Section label: condensed uppercase with a red bar, like a sports network. */
+.label-bar {
+  font-family: var(--font-display), system-ui, sans-serif;
+  font-weight: 800;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  border-left: 4px solid var(--brand);
+  padding-left: 10px;
+  line-height: 1.1;
 }
 
 /* Hide scrollbars while keeping functionality */
@@ -127,11 +140,12 @@ textarea {
 }
 
 .bg-accent-gradient {
-  background-image: linear-gradient(135deg, var(--coral), var(--brand) 45%, var(--brand-2));
+  background-color: var(--brand);
+  background-image: linear-gradient(180deg, var(--brand), var(--brand-2));
 }
 
 .text-accent-gradient {
-  background-image: linear-gradient(135deg, var(--coral), var(--brand-2));
+  background-image: linear-gradient(180deg, var(--brand), var(--brand-2));
   -webkit-background-clip: text;
   background-clip: text;
   color: transparent;
@@ -139,8 +153,8 @@ textarea {
 
 .glass {
   background: var(--glass);
-  -webkit-backdrop-filter: saturate(180%) blur(20px);
-  backdrop-filter: saturate(180%) blur(20px);
+  -webkit-backdrop-filter: blur(16px);
+  backdrop-filter: blur(16px);
 }
 
 .pressable {

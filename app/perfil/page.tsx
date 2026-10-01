@@ -114,7 +114,7 @@ export default function PerfilPage() {
               { label: "Ranking", value: `#${me.rank}`, sub: "semanal" },
               { label: "Racha", value: `${streak}`, sub: streak === 1 ? "día" : "días", flame: true },
             ].map((s) => (
-              <div key={s.label} className="rounded-2xl bg-zinc-800/60 py-3">
+              <div key={s.label} className="rounded-lg bg-zinc-800/60 py-3">
                 <p className="text-[11px] text-zinc-500">{s.label}</p>
                 <p className="text-xl font-bold tabular-nums flex items-center justify-center gap-1">
                   {s.flame && <Flame className="w-4 h-4 text-orange-400" />}

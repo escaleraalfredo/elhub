@@ -66,7 +66,7 @@ export default function ClimaPage() {
             <p className="text-sm opacity-90">{activeZone} · {periodName(now.name)}</p>
             <div className="flex items-center justify-between mt-1">
               <p className="text-5xl font-display font-extrabold">{now.temp}°{now.unit}</p>
-              <SafeImg src={now.icon} alt="" className="w-16 h-16 rounded-2xl" />
+              <SafeImg src={now.icon} alt="" className="w-16 h-16 rounded-lg" />
             </div>
             <p className="mt-1 font-medium">{now.short}</p>
             {now.rain != null && (

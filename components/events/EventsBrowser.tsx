@@ -77,7 +77,7 @@ function EventDetails({ e }: { e: EventItem }) {
   const maps = `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(`${e.venue}, ${e.city}, Puerto Rico`)}`;
   return (
     <div className="p-4 space-y-3">
-      <SafeImg src={e.image} alt="" className="w-full aspect-[16/9] object-cover rounded-2xl" />
+      <SafeImg src={e.image} alt="" className="w-full aspect-[16/9] object-cover rounded-lg" />
       <div>
         <p className="text-xs text-zinc-400">{catMeta(e.category).emoji} {catMeta(e.category).label}</p>
         <h3 className="text-lg font-bold leading-snug">{e.title}</h3>
@@ -99,14 +99,14 @@ function EventDetails({ e }: { e: EventItem }) {
             href={e.url}
             target="_blank"
             rel="noopener noreferrer"
-            className="flex-1 flex items-center justify-center gap-2 bg-accent-gradient text-white rounded-2xl py-3 font-semibold text-sm"
+            className="flex-1 flex items-center justify-center gap-2 bg-accent-gradient text-white rounded-lg py-3 font-semibold text-sm"
           >
             Boletos <ExternalLink className="w-4 h-4" />
           </a>
         )}
         <button
           onClick={() => downloadIcs(e)}
-          className="flex-1 flex items-center justify-center gap-2 bg-zinc-800 hover:bg-zinc-700 rounded-2xl py-3 font-semibold text-sm"
+          className="flex-1 flex items-center justify-center gap-2 bg-zinc-800 hover:bg-zinc-700 rounded-lg py-3 font-semibold text-sm"
         >
           <CalendarPlus className="w-4 h-4" /> Calendario
         </button>
@@ -193,7 +193,7 @@ export default function Eventos() {
   const chip = (active: boolean) =>
     cn(
       "shrink-0 px-3.5 py-1.5 rounded-full text-sm font-medium whitespace-nowrap transition-colors",
-      active ? "bg-ink text-zinc-950" : "bg-zinc-900 text-zinc-300 hover:bg-zinc-800"
+      active ? "bg-brand text-white" : "bg-zinc-900 text-zinc-300 hover:bg-zinc-800"
     );
 
   let shown = 0;
@@ -201,7 +201,7 @@ export default function Eventos() {
   return (
     <div className="space-y-4">
       {/* Search */}
-      <div className="flex items-center gap-2 bg-zinc-900 rounded-2xl px-3.5 py-2.5">
+      <div className="flex items-center gap-2 bg-zinc-900 rounded-lg px-3.5 py-2.5">
         <Search className="w-4 h-4 text-zinc-500" />
         <input
           value={query}

@@ -58,7 +58,7 @@ export default function BottomSheet({
         ref={panel}
         role="dialog"
         aria-modal="true"
-        className="relative w-full max-w-md bg-zinc-900 rounded-t-3xl border-t border-zinc-800 flex flex-col max-h-[85dvh] transition-transform duration-150"
+        className="relative w-full max-w-md bg-zinc-900 rounded-t-xl border-t border-zinc-800 flex flex-col max-h-[85dvh] transition-transform duration-150"
       >
         <div
           className="pt-2.5 pb-2 shrink-0 touch-none"

@@ -15,7 +15,7 @@ export function PageShell({
   children: React.ReactNode;
   className?: string;
 }) {
-  return <div className={cn("min-h-screen bg-zinc-950 pb-32", className)}>{children}</div>;
+  return <div className={cn("min-h-screen bg-zinc-950 pb-24", className)}>{children}</div>;
 }
 
 export function PageContent({
@@ -39,7 +39,7 @@ export function StickyBar({
   return (
     <div
       className={cn(
-        "sticky top-[calc(3.5rem+env(safe-area-inset-top))] z-40 glass",
+        "sticky top-[calc(3rem+env(safe-area-inset-top))] z-40 bg-[var(--bar)] border-b border-zinc-800",
         className
       )}
     >
@@ -74,7 +74,7 @@ export function PageHeader({
           </button>
         )}
         <div className="flex-1 min-w-0">
-          <h1 className="text-[22px] font-extrabold text-ink leading-tight truncate">{title}</h1>
+          <h1 className="font-display text-[24px] font-extrabold uppercase tracking-wide text-ink leading-tight truncate">{title}</h1>
           {subtitle && <p className="text-xs text-zinc-500 truncate">{subtitle}</p>}
         </div>
         {right}
@@ -101,11 +101,11 @@ export function Tabs({
         const key = tab.href ?? tab.value ?? tab.label;
         const isActive = key === active;
         const cls = cn(
-          "relative flex-1 py-3 text-sm font-semibold text-center transition-colors",
+          "relative flex-1 py-3 font-display text-[15px] font-bold uppercase tracking-wide text-center transition-colors",
           isActive ? "text-ink" : "text-zinc-500 hover:text-zinc-300"
         );
         const bar = isActive && (
-          <span className="absolute bottom-0 left-1/2 -translate-x-1/2 w-8 h-[3px] rounded-full bg-accent-gradient" />
+          <span className="absolute bottom-0 inset-x-2 h-[3px] bg-brand" />
         );
         return tab.href ? (
           <Link key={key} href={tab.href} className={cls}>
@@ -146,7 +146,7 @@ export function Chips<T extends string>({
           className={cn(
             "shrink-0 px-4 py-1.5 rounded-full text-sm font-medium whitespace-nowrap transition-colors",
             opt === active
-              ? "bg-ink text-zinc-950"
+              ? "bg-brand text-white"
               : "bg-zinc-900 text-zinc-300 hover:bg-zinc-800"
           )}
         >
@@ -170,7 +170,7 @@ export function Card({
     <div
       onClick={onClick}
       className={cn(
-        "bg-zinc-900 rounded-[24px] overflow-hidden",
+        "bg-zinc-900 rounded-lg overflow-hidden",
         onClick && "cursor-pointer pressable",
         className
       )}
@@ -189,7 +189,7 @@ export function SectionTitle({
 }) {
   return (
     <div className="flex items-center justify-between px-1">
-      <h2 className="text-sm font-bold uppercase tracking-wide text-zinc-400">{children}</h2>
+      <h2 className="label-bar text-[15px] text-ink">{children}</h2>
       {right}
     </div>
   );
@@ -216,12 +216,12 @@ export function EmptyState({
 /** Small banner shown when a section is displaying sample instead of live data. */
 export function Notice({ children }: { children: React.ReactNode }) {
   return (
-    <div className="rounded-2xl border border-amber-300 bg-amber-50 px-4 py-2.5 text-xs text-amber-900 dark:border-amber-500/30 dark:bg-amber-500/10 dark:text-amber-200">
+    <div className="rounded-lg border border-amber-300 bg-amber-50 px-4 py-2.5 text-xs text-amber-900 dark:border-amber-500/30 dark:bg-amber-500/10 dark:text-amber-200">
       {children}
     </div>
   );
 }
 
 export function Skeleton({ className }: { className?: string }) {
-  return <div className={cn("animate-pulse rounded-2xl bg-zinc-900", className)} />;
+  return <div className={cn("animate-pulse rounded-lg bg-zinc-900", className)} />;
 }

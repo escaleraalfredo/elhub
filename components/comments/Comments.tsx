@@ -290,13 +290,13 @@ export function CommentsSheet({
 export function CommentSection({ threadId, seed }: { threadId: string; seed?: SeedComment[] }) {
   const api = useThread(threadId, seed);
   return (
-    <section className="pb-56">
+    <section className="pb-44">
       <h2 className="font-semibold text-[15px] mb-4">
         Comentarios <span className="text-zinc-500 font-normal">({api.count})</span>
       </h2>
       <CommentList api={api} />
-      <div className="fixed inset-x-0 bottom-[calc(5.5rem+env(safe-area-inset-bottom))] z-40 px-3">
-        <div className="max-w-md mx-auto rounded-3xl overflow-hidden shadow-2xl shadow-black/50 border border-white/5">
+      <div className="fixed inset-x-0 bottom-[calc(3.5rem+env(safe-area-inset-bottom))] z-40">
+        <div className="max-w-md mx-auto border-t border-zinc-800">
           <Composer api={api} />
         </div>
       </div>

@@ -141,7 +141,7 @@ export default function TemasPage() {
                 className={cn(
                   "px-4 py-1.5 rounded-full text-sm border transition-colors",
                   draft.category === cat
-                    ? "bg-ink border-ink text-zinc-950"
+                    ? "bg-brand border-brand text-white"
                     : "bg-zinc-800 border-zinc-700 text-zinc-300 hover:border-zinc-600"
                 )}
               >

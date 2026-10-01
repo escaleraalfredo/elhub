@@ -44,7 +44,7 @@ export default function LoginPage() {
     window.location.href = "/";
   };
 
-  const btn = "w-full flex items-center justify-center gap-3 rounded-2xl py-3.5 font-semibold disabled:opacity-50";
+  const btn = "w-full flex items-center justify-center gap-3 rounded-lg py-3.5 font-semibold disabled:opacity-50";
 
   return (
     <PageShell>
@@ -70,7 +70,7 @@ export default function LoginPage() {
             placeholder="(787) 555-1234"
             value={phone}
             onChange={(e) => setPhone(e.target.value)}
-            className="w-full bg-zinc-800 border border-zinc-700 rounded-2xl px-4 py-3 focus:outline-none focus:border-brand"
+            className="w-full bg-zinc-800 border border-zinc-700 rounded-lg px-4 py-3 focus:outline-none focus:border-brand"
           />
           {sent && (
             <input
@@ -78,7 +78,7 @@ export default function LoginPage() {
               placeholder="Código de 6 dígitos"
               value={code}
               onChange={(e) => setCode(e.target.value)}
-              className="w-full bg-zinc-800 border border-zinc-700 rounded-2xl px-4 py-3 tracking-widest focus:outline-none focus:border-brand"
+              className="w-full bg-zinc-800 border border-zinc-700 rounded-lg px-4 py-3 tracking-widest focus:outline-none focus:border-brand"
             />
           )}
           <button
